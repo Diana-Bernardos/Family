@@ -1,0 +1,36 @@
+
+.main-header {
+  background: var(--white);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 4px solid;
+  border-image: var(--gradient-primary) 1;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.add-button {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.add-button:hover {
+  transform: translateY(-2px);
+}
+
+.add-button span {
+  font-size: 1.2em;
+  margin-right: 0.5rem;
+}

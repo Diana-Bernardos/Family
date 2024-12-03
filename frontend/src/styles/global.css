@@ -1,0 +1,92 @@
+* src/styles/global.css */
+:root {
+  /* Colores del logo Crazy Mom */
+  --primary-red: #FF3B3B;
+  --primary-orange: #FF8A00;
+  --primary-yellow: #FFB800;
+  --primary-purple: #8A2BE2;
+  --navy-blue: #1B1464;
+  --white: #FFFFFF;
+  --background-beige: #F5E6D3;
+  
+  --gradient-primary: linear-gradient(45deg, var(--primary-red), var(--primary-orange), var(--primary-yellow));
+  --gradient-header: linear-gradient(90deg, var(--primary-purple), var(--primary-red));
+  
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--background-beige);
+  color: var(--navy-blue);
+  line-height: 1.6;
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+input, textarea, select {
+  font-family: 'Poppins', sans-serif;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+}
+
+.card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Utilidades */
+.text-gradient {
+  background: var(--gradient-primary);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-gradient {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  border: none;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}

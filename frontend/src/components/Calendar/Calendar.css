@@ -1,0 +1,115 @@
+
+.calendar-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header button {
+  background: none;
+  border: 1px solid #ddd;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.weekday {
+  text-align: center;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border: 1px solid #eee;
+  padding: 8px;
+  min-height: 100px;
+  position: relative;
+  cursor: pointer;
+  background-color: white;
+}
+
+.calendar-day:hover {
+  background-color: #f8f9fa;
+}
+
+.calendar-day.empty {
+  background-color: #f8f9fa;
+  cursor: default;
+}
+
+.day-number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.day-events {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-item {
+  font-size: 0.8em;
+  padding: 4px 8px;
+  border-radius: 3px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-event {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.delete-event:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .calendar-day {
+    min-height: 80px;
+  }
+
+  .event-item {
+    font-size: 0.7em;
+    padding: 2px 4px;
+  }
+
+  .day-number {
+    font-size: 0.8em;
+  }
+}

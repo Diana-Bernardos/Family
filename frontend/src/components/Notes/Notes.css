@@ -1,0 +1,56 @@
+src/components/Notes/Notes.css */
+.notes-container {
+  padding: 1rem;
+}
+
+.add-note-form {
+  margin-bottom: 2rem;
+}
+
+.add-note-form textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.notes-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.note-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.note-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.note-date {
+  color: #666;
+}
+
+.delete-note {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.no-notes,
+.no-members {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+}

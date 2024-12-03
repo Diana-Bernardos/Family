@@ -1,0 +1,54 @@
+.members-list {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.member-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.member-card img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.member-info {
+  flex: 1;
+}
+
+.member-info h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.member-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.member-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.member-actions button:first-child {
+  background: var(--primary-purple);
+  color: white;
+}
+
+.member-actions button:last-child {
+  background: var(--primary-red);
+  color: white;
+}
+  
