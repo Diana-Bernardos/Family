@@ -1,4 +1,3 @@
-// src/components/Logo/Logo.jsx
 import React from 'react';
 import './Logo.css';
 
@@ -13,3 +12,5 @@ const Logo = ({ size = 'medium' }) => {
     </div>
   );
 };
+
+export default Logo;

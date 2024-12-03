@@ -1,4 +1,3 @@
-* src/styles/global.css */
 :root {
   /* Colores del logo Crazy Mom */
   --primary-red: #FF3B3B;
@@ -6,15 +5,11 @@
   --primary-yellow: #FFB800;
   --primary-purple: #8A2BE2;
   --navy-blue: #1B1464;
-  /*--white: #FFFFFF;*/
+  --white: #FFFFFF;
   --background-beige: #F5E6D3;
   
   --gradient-primary: linear-gradient(45deg, var(--primary-red), var(--primary-orange), var(--primary-yellow));
   --gradient-header: linear-gradient(90deg, var(--primary-purple), var(--primary-red));
-  
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 * {
