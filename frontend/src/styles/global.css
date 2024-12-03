@@ -6,7 +6,7 @@
   --primary-yellow: #FFB800;
   --primary-purple: #8A2BE2;
   --navy-blue: #1B1464;
-  --white: #FFFFFF;
+  /*--white: #FFFFFF;*/
   --background-beige: #F5E6D3;
   
   --gradient-primary: linear-gradient(45deg, var(--primary-red), var(--primary-orange), var(--primary-yellow));
