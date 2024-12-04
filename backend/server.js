@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
 const cors = require('cors');
+const path =require('path');
 require('dotenv').config();
 const memberRoutes = require('./routes/memberRoutes');
 const noteRoutes = require('./routes/noteRoutes');
@@ -11,6 +12,10 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+//servir archivo estaticos
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // Rutas
 app.use('/api/members', memberRoutes);
