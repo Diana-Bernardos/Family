@@ -1,10 +1,9 @@
-// components/Dashboard/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { members } from '../../services/api';
-import FamilyCalendar from '../Calendar/FamilyCalendar';
 import MembersList from '../Members/MembersList';
 import AddMemberModal from '../Members/AddMemberModal';
+import FamilyCalendar from '../Calendar/FamilyCalendar';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -12,6 +11,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,48 +42,120 @@ const Dashboard = () => {
   };
 
   const handleDeleteMember = async (memberId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este miembro?')) {
-      try {
-        await members.delete(memberId);
-        fetchMembers();
-      } catch (err) {
-        setError('Error al eliminar miembro');
-      }
+    try {
+      await members.delete(memberId);
+      fetchMembers();
+    } catch (err) {
+      setError('Error al eliminar miembro');
     }
   };
+
+  const Logo = () => (
+    <div className="logo-container">
+      <h1 className="logo-text">
+        <span className="logo-crazy">CRAZY</span>
+        <span className="logo-mom">MOM</span>
+      </h1>
+      <span className="logo-subtitle">FAMILY ORGANIZATION</span>
+    </div>
+  );
 
   if (isLoading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="dashboard-container">
+      {/* Header */}
       <header className="dashboard-header">
-        <h1>Calendario Familiar</h1>
-        <button onClick={() => setIsAddModalOpen(true)} className="add-member-btn">
-          Añadir Miembro
-        </button>
+        <div className="header-content">
+          <div className="header-left">
+            <button 
+              className="menu-button"
+              onClick={() => setShowMenu(true)}
+            >
+              <i className="fas fa-bars"></i>
+            </button>
+            <Logo />
+          </div>
+          <button 
+            onClick={() => setIsAddModalOpen(true)} 
+            className="add-button"
+          >
+            <i className="fas fa-plus"></i>
+            <span>Añadir</span>
+          </button>
+        </div>
       </header>
 
-      {error && <div className="error-message">{error}</div>}
+      {/* Main Content */}
+      <main className="dashboard-main">
+        {error && <div className="error-message">{error}</div>}
 
-      <div className="dashboard-content">
-        <aside className="members-sidebar">
-          <MembersList 
+        {/* Sección de Miembros */}
+        <section className="members-section">
+          <MembersList
             members={membersList}
             onDeleteMember={handleDeleteMember}
             onSelectMember={(id) => navigate(`/member/${id}`)}
           />
-        </aside>
+        </section>
 
-        <main className="calendar-container">
+        {/* Calendario */}
+        <section className="calendar-section">
           <FamilyCalendar members={membersList} />
-        </main>
-      </div>
+        </section>
 
-      <AddMemberModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddMember}
-      />
+        {/* Próximos Eventos */}
+        <section className="upcoming-events">
+          <h2>Próximos Eventos</h2>
+          <div className="events-list">
+            {/* Aquí irán los eventos */}
+          </div>
+        </section>
+      </main>
+
+      {/* Menú Lateral */}
+      {showMenu && (
+        <div className="sidebar-overlay">
+          <div 
+            className="overlay-background"
+            onClick={() => setShowMenu(false)}
+          ></div>
+          <div className="sidebar-menu">
+            <div className="sidebar-header">
+              <Logo />
+              <button 
+                className="close-menu"
+                onClick={() => setShowMenu(false)}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <nav className="sidebar-nav">
+              <button onClick={() => setIsAddModalOpen(true)}>
+                <i className="fas fa-user-plus"></i>
+                Añadir Miembro
+              </button>
+              <button>
+                <i className="fas fa-share-alt"></i>
+                Compartir
+              </button>
+              <button>
+                <i className="fas fa-cog"></i>
+                Configuración
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Añadir Miembro */}
+      {isAddModalOpen && (
+        <AddMemberModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={handleAddMember}
+        />
+      )}
     </div>
   );
 };
