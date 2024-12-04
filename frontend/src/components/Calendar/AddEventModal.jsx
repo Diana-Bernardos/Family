@@ -67,7 +67,7 @@ const AddEventModal = ({ isOpen, onClose, onAdd, selectedDate, member }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay">oc
       <div className="modal-content event-modal">
         <div className="modal-header" style={{ background: eventData.color }}>
           <h3>
