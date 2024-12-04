@@ -72,41 +72,38 @@ const MemberDetail = () => {
   if (!member) return <div className="error">Miembro no encontrado</div>;
 
   return (
-    <div className="member-detail-container">
-      <header className="member-detail-header">
+    <div className="member-detail">
+      <header className="member-header">
         <button onClick={() => navigate('/')} className="back-button">
-          Volver
+          <i className="fas fa-arrow-left"></i>
         </button>
-        <h2>{member.name}</h2>
+        <h1>{member.name}</h1>
         <button onClick={() => setIsEditModalOpen(true)} className="edit-button">
-          Editar
+          <i className="fas fa-edit"></i>
         </button>
       </header>
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="member-detail-content">
-        <div className="member-info-section">
-          <img 
-            src={member.photo_url || '/placeholder.png'} 
-            alt={member.name} 
-            className="member-photo"
-          />
+      <div className="member-content">
+        <aside className="member-sidebar">
+          <div className="member-photo-container">
+            <img 
+              src={member.photo_url || '/placeholder.png'} 
+              alt={member.name} 
+              className="member-photo"
+            />
         </div>
-
-        <div className="member-calendar-section">
-          <h3>Calendario Personal</h3>
-          <MemberCalendar memberId={id} />
-        </div>
-
-        <div className="member-notes-section">
-          <h3>Notas</h3>
-          <NotesList
+        <NotesList
             notes={memberNotes}
             onAddNote={handleAddNote}
             onDeleteNote={handleDeleteNote}
           />
-        </div>
+        </aside>
+        <main className="member-main">
+          <MemberCalendar memberId={id} />
+        </main>
+      
       </div>
 
       <EditMemberModal

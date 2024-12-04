@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import '../Modal/Modal.css';
 import './EventModal.css';
 
+
 const ACTIVITY_TYPES = {
   medical: {
     label: 'Cita Médica',

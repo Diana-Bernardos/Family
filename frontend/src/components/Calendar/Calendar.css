@@ -69,3 +69,43 @@
 .has-events {
   background: #f8f9fa;
 }
+.event-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 2px solid var(--type-color);
+  border-radius: 4px;
+  background: none;
+  color: var(--type-color);
+  cursor: pointer;
+}
+
+.event-type-btn.active {
+  background: var(--type-color);
+  color: white;
+}
+
+.event-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+}
+
+.event-title {
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

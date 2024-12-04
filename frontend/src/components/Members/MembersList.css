@@ -1,5 +1,8 @@
 .members-container {
   padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .members-title {
@@ -9,82 +12,96 @@
   margin-bottom: 1rem;
 }
 
-.members-scroll {
-  display: flex;
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  padding: 0.5rem;
 }
 
-.member-card {
-  flex: 0 0 auto;
-  width: 150px;
-  background: white;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s;
+.member-photo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.photo-container {
   position: relative;
-  scroll-snap-align: start;
-}
-
-.member-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.member-photo-container {
-  width: 100%;
-  aspect-ratio: 1;
-  margin-bottom: 0.5rem;
-  border-radius: 0.5rem;
-  overflow: hidden;
+  width: 60px;
+  height: 60px;
 }
 
 .member-photo {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid var(--primary-purple);
 }
 
-.member-name {
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
-  color: var(--navy-blue);
+.member-photo:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
 }
 
-.delete-member {
+.delete-button {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: rgba(255, 59, 59, 0.9);
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-red);
   color: white;
   border: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  font-size: 0.75rem;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 
-.member-card:hover .delete-member {
+.photo-container:hover .delete-button {
   opacity: 1;
 }
 
-/* Esconder scrollbar pero mantener funcionalidad */
-.members-scroll {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+.delete-button:hover {
+  transform: scale(1.1);
+  background: #dc3545;
 }
 
-.members-scroll::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+.member-name {
+  font-size: 0.875rem;
+  text-align: center;
+  color: var(--navy-blue);
+  font-weight: 500;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+  .members-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .photo-container {
+    width: 50px;
+    height: 50px;
+  }
+
+  .member-name {
+    font-size: 0.75rem;
+  }
+}
+  
   
