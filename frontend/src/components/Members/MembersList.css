@@ -1,54 +1,90 @@
-.members-list {
-  display: grid;
-  gap: 1rem;
+.members-container {
   padding: 1rem;
+}
+
+.members-title {
+  color: var(--navy-blue);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.members-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .member-card {
+  flex: 0 0 auto;
+  width: 150px;
   background: white;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+  position: relative;
+  scroll-snap-align: start;
 }
 
-.member-card img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+.member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.member-photo-container {
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.member-photo {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.member-info {
-  flex: 1;
+.member-name {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+  color: var(--navy-blue);
 }
 
-.member-info h3 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-}
-
-.member-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.member-actions button {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.delete-member {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 59, 59, 0.9);
+  color: white;
   border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
-.member-actions button:first-child {
-  background: var(--primary-purple);
-  color: white;
+.member-card:hover .delete-member {
+  opacity: 1;
 }
 
-.member-actions button:last-child {
-  background: var(--primary-red);
-  color: white;
+/* Esconder scrollbar pero mantener funcionalidad */
+.members-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.members-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
   
