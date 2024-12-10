@@ -1,36 +1,147 @@
-// src/services/api.js
-import axios from 'axios';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-const API_URL = 'http://localhost:3001/api';
+export const api = {
+    // Eventos
+    getEvents: async () => {
+        try {
+            const response = await fetch(`${API_URL}/events`);
+            if (!response.ok) throw new Error('Error al obtener eventos');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
 
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+    getEvent: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/events/${id}`);
+            if (!response.ok) throw new Error('Error al obtener evento');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
 
-export const members = {
-  getAll: () => api.get('/members'),
-  getById: (id) => api.get(`/members/${id}`),
-  create: (data) => api.post('/members', data),
-  update: (id, data) => api.put(`/members/${id}`, data),
-  delete: (id) => api.delete(`/members/${id}`),
-};
+    createEvent: async (eventData) => {
+        try {
+            const response = await fetch(`${API_URL}/events`, {
+                method: 'POST',
+                body: eventData
+            });
+            if (!response.ok) throw new Error('Error al crear evento');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
 
-export const notes = {
-  getByMember: (memberId) => api.get(`/notes/member/${memberId}`),
-  create: (data) => api.post('/notes', data),
-  update: (id, data) => api.put(`/notes/${id}`, data),
-  delete: (id) => api.delete(`/notes/${id}`),
-};
+    updateEvent: async (id, eventData) => {
+        try {
+            const response = await fetch(`${API_URL}/events/${id}`, {
+                method: 'PUT',
+                body: eventData
+            });
+            if (!response.ok) throw new Error('Error al actualizar evento');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
 
-export const events = {
-  getFamilyEvents: () => api.get('/events/family'),
-  getMemberEvents: (memberId) => api.get(`/events/member/${memberId}`),
-  create: (data) => api.post('/events', data),
-  update: (id, data) => api.put(`/events/${id}`, data),
-  delete: (id) => api.delete(`/events/${id}`),
-};
+    deleteEvent: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/events/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Error al eliminar evento');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
 
-export default api;
+    // Miembros
+    getMembers: async () => {
+        try {
+            const response = await fetch(`${API_URL}/members`);
+            if (!response.ok) throw new Error('Error al obtener miembros');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+
+    getMember: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/members/${id}`);
+            if (!response.ok) throw new Error('Error al obtener miembro');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+
+    getMemberEvents: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/members/${id}/events`);
+            if (!response.ok) {
+                console.log('Respuesta del servidor:', await response.text());
+                throw new Error('Error al obtener eventos del miembro');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error detallado:', error);
+            throw error;
+        }
+    },
+
+    createMember: async (memberData) => {
+        try {
+            const response = await fetch(`${API_URL}/members`, {
+                method: 'POST',
+                body: memberData
+            });
+            if (!response.ok) throw new Error('Error al crear miembro');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+
+    updateMember: async (id, memberData) => {
+        try {
+            const response = await fetch(`${API_URL}/members/${id}`, {
+                method: 'PUT',
+                body: memberData
+            });
+            if (!response.ok) throw new Error('Error al actualizar miembro');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    },
+
+    deleteMember: async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/members/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Error al eliminar miembro');
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
+    }
+  }
+
+    
