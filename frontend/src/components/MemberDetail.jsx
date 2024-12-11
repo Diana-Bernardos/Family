@@ -2,6 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 
+
+
+
+const DocumentList = ({ documents, onDelete, onDownload }) => (
+    <div className="documents-list">
+        {documents.map(doc => (
+            <div key={doc.id} className="document-item">
+                <div className="document-info">
+                    <i className="fas fa-file-pdf"></i>
+                    <span>{doc.document_name}</span>
+                </div>
+                <div className="document-actions">
+                    <button 
+                        onClick={() => onDownload(doc.id, doc.document_name)}
+                        className="btn btn-secondary btn-sm"
+                    >
+                        Descargar
+                    </button>
+                    <button 
+                        onClick={() => onDelete(doc.id)}
+                        className="btn btn-danger btn-sm"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 const MemberDetail = () => {
     const [member, setMember] = useState(null);
     const [memberEvents, setMemberEvents] = useState([]);
@@ -9,10 +39,75 @@ const MemberDetail = () => {
     const [error, setError] = useState(null);
     const { id } = useParams();
     const navigate = useNavigate();
+    const [documents, setDocuments] = useState([]);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         loadMemberData();
+        loadDocuments();
     }, [id]);
+
+    const loadDocuments = async () => {
+        try {
+            const data = await api.getMemberDocuments(id);
+            setDocuments(data);
+        } catch (error) {
+            console.error('Error al cargar documentos:', error);
+        }
+    };
+
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+      
+        if (file.type !== 'application/pdf') {
+          alert('Solo se permiten archivos PDF');
+          return;
+        }
+      
+        if (file.size > 10 * 1024 * 1024) {
+          alert('El archivo no puede ser mayor a 10MB');
+          return;
+        }
+      
+        try {
+          setUploading(true);
+          await api.uploadDocument(member.id, file);
+          const updatedDocuments = await api.getMemberDocuments(member.id);
+          setDocuments(updatedDocuments);
+        } catch (error) {
+          setError('Error al subir el documento');
+          console.error('Error:', error);
+        } finally {
+          setUploading(false);
+          event.target.value = ''; // Limpiar input
+        }
+      };
+    const handleDownload = async (documentId, fileName) => {
+        try {
+            const blob = await api.downloadDocument(documentId);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error al descargar documento:', error);
+        }
+    };
+
+    const handleDeleteDocument = async (documentId) => {
+        if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
+            try {
+                await api.deleteDocument(documentId);
+                setDocuments(documents.filter(doc => doc.id !== documentId));
+            } catch (error) {
+                console.error('Error al eliminar documento:', error);
+            }
+        }}
 
     const loadMemberData = async () => {
         try {
@@ -29,7 +124,7 @@ const MemberDetail = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     const handleDelete = async () => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
@@ -129,8 +224,36 @@ const MemberDetail = () => {
                     </div>
                 )}
             </div>
+            <div className="member-documents-section">
+                <h3>Documentos</h3>
+                <div className="document-upload">
+                    <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        style={{ display: 'none' }}
+                        id="document-upload"
+                    />
+                    <label htmlFor="document-upload" className="btn btn-primary">
+                        {uploading ? 'Subiendo...' : 'Subir Documento'}
+                    </label>
+                </div>
+                
+                {documents.length === 0 ? (
+                    <p className="no-documents">No hay documentos adjuntos</p>
+                ) : (
+                    <DocumentList 
+                        documents={documents}
+                        onDelete={handleDeleteDocument}
+                        onDownload={handleDownload}
+                    />
+                )}
+            </div>
         </div>
     );
-};
+    
+
+    };
 
 export default MemberDetail;

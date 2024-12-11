@@ -141,7 +141,62 @@ export const api = {
             console.error('Error:', error);
             throw error;
         }
+    },
+  
+
+    uploadDocument: async (memberId, documentFile) => {
+        try {
+          const formData = new FormData();
+          formData.append('document', documentFile);
+      
+          const response = await fetch(`${API_URL}/documents/${memberId}/upload`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) throw new Error('Error al subir documento');
+          return await response.json();
+        } catch (error) {
+          console.error('Error:', error);
+          throw error;
+        }
+      },
+
+      getMemberDocuments: async (memberId) => {
+        try {
+          const response = await fetch(`${API_URL}/documents/${memberId}/documents`);
+          if (!response.ok) throw new Error('Error al obtener documentos');
+          return await response.json();
+        } catch (error) {
+          console.error('Error:', error);
+          throw error;
+        }
+      },
+downloadDocument: async (documentId) => {
+    try {
+        const response = await fetch(`${API_URL}/documents/download/${documentId}`);
+        if (!response.ok) throw new Error('Error al descargar documento');
+        return await response.blob();
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
     }
-  }
+},
+
+
+deleteDocument: async (documentId) => {
+    try {
+        const response = await fetch(`${API_URL}/documents/${documentId}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Error al eliminar documento');
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+}};
+
+  
 
     
