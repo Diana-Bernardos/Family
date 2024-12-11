@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const mysql = require('mysql2/promise');
-const pool = require('../config/database');
+
 
 
 
