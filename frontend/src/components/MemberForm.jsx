@@ -1,4 +1,3 @@
-// src/components/MemberForm.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
@@ -21,18 +20,12 @@ const MemberForm = () => {
         setError(null);
 
         try {
-            // Crear FormData
             const data = new FormData();
             Object.keys(formData).forEach(key => {
                 if (formData[key] !== null && formData[key] !== '') {
                     data.append(key, formData[key]);
                 }
             });
-
-            // Debug log
-            for (let pair of data.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
 
             await api.createMember(data);
             navigate('/members');

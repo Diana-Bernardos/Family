@@ -1,8 +1,6 @@
-// src/components/MemberDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatDate } from '../utils/dateUtils';
 
 const MemberDetail = () => {
     const [member, setMember] = useState(null);
@@ -13,32 +11,32 @@ const MemberDetail = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const [memberData, eventsData] = await Promise.all([
-                    api.getMember(id),
-                    api.getMemberEvents(id)
-                ]);
-                setMember(memberData);
-                setMemberEvents(eventsData);
-            } catch (err) {
-                setError('Error al cargar los datos');
-                console.error('Error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        loadMemberData();
     }, [id]);
+
+    const loadMemberData = async () => {
+        try {
+            setLoading(true);
+            const [memberData, eventsData] = await Promise.all([
+                api.getMember(id),
+                api.getMemberEvents(id)
+            ]);
+            setMember(memberData);
+            setMemberEvents(eventsData);
+        } catch (error) {
+            setError('Error al cargar los datos del miembro');
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDelete = async () => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
             try {
                 await api.deleteMember(id);
                 navigate('/members');
-            } catch (err) {
+            } catch (error) {
                 setError('Error al eliminar el miembro');
             }
         }
@@ -47,6 +45,10 @@ const MemberDetail = () => {
     if (loading) return <div className="loading">Cargando...</div>;
     if (error) return <div className="error-message">{error}</div>;
     if (!member) return <div className="error-message">Miembro no encontrado</div>;
+
+    const avatarUrl = member.avatar ? 
+        `data:${member.avatar.type};base64,${member.avatar.data}` : 
+        '/default-avatar.png';
 
     return (
         <div className="member-detail">
@@ -57,48 +59,70 @@ const MemberDetail = () => {
             <div className="member-info">
                 <div className="member-avatar-container">
                     <img 
-                        src={member.avatar_url ? `http://localhost:3001${member.avatar_url}` : '/default-avatar.png'} 
+                        src={avatarUrl}
                         alt={member.name}
-                        className="member-avatar-large"
+                        className="member-avatar"
                     />
                 </div>
-
                 <div className="member-data">
                     <h3>{member.name}</h3>
                     <p><strong>Email:</strong> {member.email}</p>
                     {member.phone && <p><strong>Teléfono:</strong> {member.phone}</p>}
                     {member.birth_date && (
-                        <p><strong>Fecha de Nacimiento:</strong> {formatDate(member.birth_date)}</p>
+                        <p><strong>Fecha de Nacimiento:</strong> {new Date(member.birth_date).toLocaleDateString()}</p>
                     )}
                 </div>
 
                 <div className="member-actions">
-                    <button onClick={() => navigate(`/edit-member/${id}`)} className="btn btn-primary">
+                    <button 
+                        onClick={() => navigate(`/edit-member/${id}`)} 
+                        className="btn btn-primary"
+                    >
                         Editar
                     </button>
-                    <button onClick={handleDelete} className="btn btn-danger">
+                    <button 
+                        onClick={handleDelete}
+                        className="btn btn-danger"
+                    >
                         Eliminar
                     </button>
-                    <button onClick={() => navigate('/members')} className="btn btn-secondary">
+                    <button 
+                        onClick={() => navigate('/members')}
+                        className="btn btn-secondary"
+                    >
                         Volver
                     </button>
                 </div>
             </div>
 
-            <div className="member-events">
+            <div className="member-events-section">
                 <h3>Eventos del Miembro</h3>
                 {memberEvents.length === 0 ? (
                     <p className="no-events">No hay eventos asociados a este miembro</p>
                 ) : (
-                    <div className="events-list">
+                    <div className="events-grid">
                         {memberEvents.map(event => (
-                            <div key={event.id} className="event-item">
+                            <div key={event.id} className="event-card-compact">
+                                {event.image && (
+                                    <div className="event-image">
+                                        <img 
+                                            src={`data:${event.image.type};base64,${event.image.data}`}
+                                            alt={event.name}
+                                        />
+                                    </div>
+                                )}
                                 <div className="event-info">
                                     <h4>{event.name}</h4>
-                                    <p>{formatDate(event.event_date)}</p>
+                                    <p className="event-date">
+                                        {new Date(event.event_date).toLocaleDateString()}
+                                    </p>
+                                    <p className="event-type">{event.event_type}</p>
                                 </div>
-                                <Link to={`/event/${event.id}`} className="btn btn-secondary">
-                                    Ver Evento
+                                <Link 
+                                    to={`/event/${event.id}`}
+                                    className="btn btn-secondary"
+                                >
+                                    Ver
                                 </Link>
                             </div>
                         ))}

@@ -1,9 +1,6 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-import { formatDate } from '../utils/dateUtils';
 
 const EventDetail = () => {
     const [event, setEvent] = useState(null);
@@ -13,10 +10,10 @@ const EventDetail = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchEventDetails();
+        loadEvent();
     }, [id]);
 
-    const fetchEventDetails = async () => {
+    const loadEvent = async () => {
         try {
             const data = await api.getEvent(id);
             setEvent(data);
@@ -45,37 +42,46 @@ const EventDetail = () => {
     return (
         <div className="event-detail">
             <h2>{event.name}</h2>
+            
             <div className="event-info">
-                <p><strong>Fecha:</strong> {formatDate(event.event_date)}</p>
-                <p><strong>Tipo:</strong> {event.event_type}</p>
-                {event.image_url && (
-                    <img 
-                        src={`http://localhost:3001${event.image_url}`} 
-                        alt="Imagen del evento" 
-                        className="event-image"
-                    />
-                )}
-                {event.members && event.members.length > 0 && (
-                    <div className="event-members">
-                        <h3>Miembros Participantes</h3>
-                        <div className="member-list">
-                            {event.members.map(member => (
-                                <Link 
-                                    key={member.id} 
-                                    to={`/member/${member.id}`}
-                                    className="member-item"
-                                >
-                                    <img 
-                                        src={member.avatar_url ? `http://localhost:3001${member.avatar_url}` : '/default-avatar.png'} 
-                                        alt={member.name} 
-                                        className="member-avatar-small"
-                                    />
-                                    <span>{member.name}</span>
-                                </Link>
-                            ))}
-                        </div>
+                {event.image && (
+                    <div className="event-image">
+                        <img 
+                            src={`data:${event.image.type};base64,${event.image.data}`}
+                            alt={event.name}
+                        />
                     </div>
                 )}
+
+                <div className="event-data">
+                    <p><strong>Fecha:</strong> {new Date(event.event_date).toLocaleDateString()}</p>
+                    <p><strong>Tipo:</strong> {event.event_type}</p>
+                    
+                    {event.members && event.members.length > 0 && (
+                        <div className="event-members">
+                            <h3>Participantes</h3>
+                            <div className="members-list">
+                                {event.members.map(member => (
+                                    <Link 
+                                        key={member.id} 
+                                        to={`/member/${member.id}`}
+                                        className="member-item"
+                                    >
+                                        {member.avatar && (
+                                            <img 
+                                                src={`data:${member.avatar.type};base64,${member.avatar.data}`}
+                                                alt={member.name}
+                                                className="member-avatar-small"
+                                            />
+                                        )}
+                                        <span>{member.name}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div className="event-actions">
                     <button 
                         onClick={() => navigate(`/edit-event/${id}`)}

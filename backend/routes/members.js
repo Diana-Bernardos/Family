@@ -19,16 +19,10 @@ const pool = mysql.createPool({
 });
 
 // Configuración de multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/avatars/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, `avatar-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-const upload = multer({ storage });
+
 
 // Obtener eventos de un miembro específico
 router.get('/:id/events', async (req, res) => {
@@ -51,15 +45,29 @@ router.get('/:id/events', async (req, res) => {
 // Obtener un miembro específico
 router.get('/:id', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM members WHERE id = ?', [req.params.id]);
-        
+        const [rows] = await pool.query(
+            'SELECT id, name, email, phone, birth_date, avatar_data, avatar_type FROM members WHERE id = ?',
+            [req.params.id]
+        );
+
         if (rows.length === 0) {
             return res.status(404).json({ message: 'Miembro no encontrado' });
         }
-        
-        res.json(rows[0]);
+
+        const member = rows[0];
+        const response = {
+            ...member,
+            avatar: member.avatar_data ? {
+                data: member.avatar_data.toString('base64'),
+                type: member.avatar_type
+            } : null
+        };
+        delete response.avatar_data;
+        delete response.avatar_type;
+
+        res.json(response);
     } catch (error) {
-        console.error('Error al obtener miembro:', error);
+        console.error('Error:', error);
         res.status(500).json({ error: 'Error al obtener miembro' });
     }
 });
@@ -67,10 +75,24 @@ router.get('/:id', async (req, res) => {
 // Obtener todos los miembros
 router.get('/', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM members ORDER BY name');
-        res.json(rows);
+        const [rows] = await pool.query('SELECT id, name, email, phone, birth_date, avatar_data, avatar_type FROM members');
+        
+        const members = rows.map(member => ({
+            ...member,
+            avatar: member.avatar_data ? {
+                data: member.avatar_data.toString('base64'),
+                type: member.avatar_type
+            } : null
+        }));
+
+        members.forEach(member => {
+            delete member.avatar_data;
+            delete member.avatar_type;
+        });
+
+        res.json(members);
     } catch (error) {
-        console.error('Error al obtener miembros:', error);
+        console.error('Error:', error);
         res.status(500).json({ error: 'Error al obtener miembros' });
     }
 });
@@ -114,40 +136,41 @@ router.get('/:id', async (req, res) => {
 router.post('/', upload.single('avatar'), async (req, res) => {
     const connection = await pool.getConnection();
     try {
-        console.log('Datos recibidos:', req.body); // Log para debugging
         await connection.beginTransaction();
 
         const { name, email, phone, birth_date } = req.body;
-        const avatar_url = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+        let avatarData = null;
+        let avatarType = null;
 
-        // Validación básica
-        if (!name || !email) {
-            throw new Error('Nombre y email son requeridos');
+        if (req.file) {
+            avatarData = req.file.buffer;
+            avatarType = req.file.mimetype;
         }
 
         const [result] = await connection.query(
-            'INSERT INTO members (name, email, phone, birth_date, avatar_url) VALUES (?, ?, ?, ?, ?)',
-            [name, email, phone || null, birth_date || null, avatar_url]
+            'INSERT INTO members (name, email, phone, birth_date, avatar_data, avatar_type) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, email, phone || null, birth_date || null, avatarData, avatarType]
         );
 
         await connection.commit();
-        console.log('Miembro creado:', result); // Log para debugging
 
-        res.status(201).json({
+        const response = {
             id: result.insertId,
             name,
             email,
             phone,
             birth_date,
-            avatar_url
-        });
+            avatar: avatarData ? {
+                data: avatarData.toString('base64'),
+                type: avatarType
+            } : null
+        };
+
+        res.status(201).json(response);
     } catch (error) {
         await connection.rollback();
-        console.error('Error al crear miembro:', error);
-        res.status(500).json({ 
-            error: 'Error al crear miembro',
-            details: error.message 
-        });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al crear miembro' });
     } finally {
         connection.release();
     }
@@ -161,14 +184,20 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
 
         const { id } = req.params;
         const { name, email, phone, birth_date } = req.body;
-        const avatar_url = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+        let avatarData = null;
+        let avatarType = null;
+
+        if (req.file) {
+            avatarData = req.file.buffer;
+            avatarType = req.file.mimetype;
+        }
 
         let query = 'UPDATE members SET name = ?, email = ?, phone = ?, birth_date = ?';
-        let params = [name, email, phone, birth_date];
+        let params = [name, email, phone || null, birth_date || null];
 
-        if (avatar_url) {
-            query += ', avatar_url = ?';
-            params.push(avatar_url);
+        if (req.file) {
+            query += ', avatar_data = ?, avatar_type = ?';
+            params.push(avatarData, avatarType);
         }
 
         query += ' WHERE id = ?';
@@ -186,7 +215,7 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error('Error:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json({ error: 'Error al actualizar miembro' });
     } finally {
         connection.release();
     }

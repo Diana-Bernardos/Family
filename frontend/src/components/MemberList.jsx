@@ -1,18 +1,20 @@
+
+
 // src/components/MemberList.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 
-function MemberList() {
+const MemberList = () => {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchMembers();
+        loadMembers();
     }, []);
 
-    const fetchMembers = async () => {
+    const loadMembers = async () => {
         try {
             const data = await api.getMembers();
             setMembers(data);
@@ -31,7 +33,6 @@ function MemberList() {
                 setMembers(members.filter(member => member.id !== id));
             } catch (error) {
                 setError('Error al eliminar el miembro');
-                console.error('Error:', error);
             }
         }
     };
@@ -42,7 +43,7 @@ function MemberList() {
     return (
         <div className="member-list">
             <div className="member-list-header">
-                <h1>Miembros de la Familia</h1>
+                <h2>Miembros de la Familia</h2>
                 <Link to="/new-member" className="btn btn-primary">
                     Añadir Miembro
                 </Link>
@@ -54,42 +55,53 @@ function MemberList() {
                 </div>
             ) : (
                 <div className="members-grid">
-                    {members.map(member => (
-                        <div key={member.id} className="member-card">
-                            <img 
-                                src={member.avatar_url ? `http://localhost:3001${member.avatar_url}` : '/default-avatar.png'} 
-                                alt={member.name}
-                                className="member-avatar"
-                            />
-                            <h3>{member.name}</h3>
-                            <p>{member.email}</p>
-                            {member.phone && <p>{member.phone}</p>}
-                            <div className="member-actions">
-                                <Link 
-                                    to={`/member/${member.id}`} 
-                                    className="btn btn-secondary"
-                                >
-                                    Ver Detalles
-                                </Link>
-                                <Link 
-                                    to={`/edit-member/${member.id}`} 
-                                    className="btn btn-primary"
-                                >
-                                    Editar
-                                </Link>
-                                <button 
-                                    onClick={() => handleDeleteMember(member.id)}
-                                    className="btn btn-danger"
-                                >
-                                    Eliminar
-                                </button>
+                    {members.map(member => {
+                        const avatarUrl = member.avatar ? 
+                            `data:${member.avatar.type};base64,${member.avatar.data}` : 
+                            '/default-avatar.png';
+
+                        return (
+                            <div key={member.id} className="member-card">
+                                <div className="member-avatar-container">
+                                    <img 
+                                        src={avatarUrl}
+                                        alt={member.name}
+                                        className="member-avatar"
+                                    />
+                                </div>
+                                <div className="member-info">
+                                    <h3>{member.name}</h3>
+                                    <p className="member-email">{member.email}</p>
+                                </div>
+                                <div className="member-actions">
+                                    <Link 
+                                        to={`/member/${member.id}`} 
+                                        className="btn btn-secondary"
+                                    >
+                                        Ver Detalles
+                                    </Link>
+                                    <div className="btn-row">
+                                        <Link 
+                                            to={`/edit-member/${member.id}`} 
+                                            className="btn btn-primary"
+                                        >
+                                            Editar
+                                        </Link>
+                                        <button 
+                                            onClick={() => handleDeleteMember(member.id)}
+                                            className="btn btn-danger"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
     );
-}
+};
 
 export default MemberList;

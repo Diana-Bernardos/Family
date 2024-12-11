@@ -6,72 +6,125 @@ const path = require('path');
 const pool = require('../config/database');
 
 // Configuración de multer para subida de archivos
-const storage = multer.diskStorage({
-    destination: './uploads/',
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
-const upload = multer({ 
-    storage,
-    limits: { fileSize: 5000000 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png/;
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = filetypes.test(file.mimetype);
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Solo se permiten imágenes (jpeg, jpg, png)'));
-    }
-});
+
 
 // Obtener todos los eventos
 router.get('/', async (req, res) => {
     try {
-        const [events] = await pool.query('SELECT * FROM events ORDER BY event_date');
+        const [rows] = await pool.query(`
+            SELECT id, name, event_date, event_type, icon, color, image_data, image_type 
+            FROM events
+        `);
+
+        const events = rows.map(event => ({
+            ...event,
+            image: event.image_data ? {
+                data: event.image_data.toString('base64'),
+                type: event.image_type
+            } : null
+        }));
+
+        events.forEach(event => {
+            delete event.image_data;
+            delete event.image_type;
+        });
+
         res.json(events);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener eventos' });
     }
 });
 
 // Obtener un evento específico
 router.get('/:id', async (req, res) => {
     try {
-        const [events] = await pool.query('SELECT * FROM events WHERE id = ?', [req.params.id]);
-        if (events.length === 0) {
+        const [rows] = await pool.query(
+            'SELECT id, name, event_date, event_type, icon, color, image_data, image_type FROM events WHERE id = ?',
+            [req.params.id]
+        );
+
+        if (rows.length === 0) {
             return res.status(404).json({ message: 'Evento no encontrado' });
         }
-        res.json(events[0]);
+
+        const event = rows[0];
+        const response = {
+            ...event,
+            image: event.image_data ? {
+                data: event.image_data.toString('base64'),
+                type: event.image_type
+            } : null
+        };
+        delete response.image_data;
+        delete response.image_type;
+
+        res.json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener evento' });
     }
 });
 
+
 // Crear nuevo evento
 router.post('/', upload.single('image'), async (req, res) => {
+    const connection = await pool.getConnection();
     try {
-        const { name, event_date, event_type, icon, color } = req.body;
-        const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+        await connection.beginTransaction();
 
-        const [result] = await pool.query(
-            'INSERT INTO events (name, event_date, event_type, icon, color, image_url) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, event_date, event_type, icon, color, image_url]
+        const { name, event_date, event_type, icon, color, members } = req.body;
+        let imageData = null;
+        let imageType = null;
+
+        if (req.file) {
+            imageData = req.file.buffer;
+            imageType = req.file.mimetype;
+        }
+
+        const [eventResult] = await connection.query(
+            'INSERT INTO events (name, event_date, event_type, icon, color, image_data, image_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, event_date, event_type, icon, color, imageData, imageType]
         );
 
-        res.status(201).json({
-            id: result.insertId,
+        const eventId = eventResult.insertId;
+
+        if (members) {
+            const memberIds = JSON.parse(members);
+            for (const memberId of memberIds) {
+                await connection.query(
+                    'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
+                    [eventId, memberId]
+                );
+            }
+        }
+
+        await connection.commit();
+
+        const response = {
+            id: eventId,
             name,
             event_date,
             event_type,
             icon,
             color,
-            image_url
-        });
+            image: imageData ? {
+                data: imageData.toString('base64'),
+                type: imageType
+            } : null,
+            members: members ? JSON.parse(members) : []
+        };
+
+        res.status(201).json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        await connection.rollback();
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al crear evento' });
+    } finally {
+        connection.release();
     }
 });
 

@@ -1,18 +1,26 @@
 export const EVENT_TYPES = [
-    { value: 'reunion', label: 'Reunión' },
-    { value: 'recordatorio', label: 'Recordatorio' },
-    { value: 'tarea', label: 'Tarea' },
+    { value: 'familiar', label: 'Evento Familiar' },
     { value: 'cumpleanos', label: 'Cumpleaños' },
-    { value: 'familiar', label: 'Evento Familiar' }
+    { value: 'reunion', label: 'Reunión' },
+    { value: 'celebracion', label: 'Celebración' },
+    { value: 'otro', label: 'Otro' }
 ];
 
 export const ICONS = [
-    { value: 'fas fa-calendar', label: '📅 Calendario' },
-    { value: 'fas fa-star', label: '⭐ Estrella' },
-    { value: 'fas fa-bell', label: '🔔 Campana' },
     { value: 'fas fa-birthday-cake', label: '🎂 Cumpleaños' },
-    { value: 'fas fa-heart', label: '❤️ Familiar' }
+    { value: 'fas fa-users', label: '👥 Reunión' },
+    { value: 'fas fa-heart', label: '❤️ Familiar' },
+    { value: 'fas fa-gift', label: '🎁 Celebración' },
+    { value: 'fas fa-star', label: '⭐ Otro' }
 ];
+
+export const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+};
 
 export const DEFAULT_COLORS = [
     '#FF6B6B',
