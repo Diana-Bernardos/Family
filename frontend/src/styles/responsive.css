@@ -1,0 +1,42 @@
+/* src/styles/responsive.css */
+/* Mobile First */
+@media (max-width: 640px) {
+    .nav-container {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .member-card {
+        margin: var(--spacing-sm);
+    }
+
+    .calendar-container {
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .members-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+    .members-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Ajustes de altura para diferentes dispositivos */
+@media (min-height: 800px) {
+    .main-content {
+        min-height: calc(100vh - 80px);
+    }
+}

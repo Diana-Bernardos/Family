@@ -1,0 +1,172 @@
+/* src/styles/splash.css */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--bg-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.splash-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 20px;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.logo-container {
+    margin-bottom: 20px;
+}
+
+.logo {
+    width: 80px;
+    height: 100px;
+    margin: 0 auto;
+    position: relative;
+    border: 3px solid var(--navy);
+    border-radius: 10px;
+}
+
+.hearts {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.heart {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--navy);
+    border-radius: 50%;
+    transform: rotate(45deg);
+}
+
+.heart-1 { top: 15px; left: 15px; }
+.heart-2 { top: 15px; right: 15px; }
+.heart-3 { bottom: 15px; left: 15px; }
+.heart-4 { bottom: 15px; right: 15px; }
+
+.app-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.app-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.app-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.splash-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.3;
+}
+
+.shape-1 {
+    width: 300px;
+    height: 300px;
+    background-color: var(--peach);
+    top: -100px;
+    left: -100px;
+}
+
+.shape-2 {
+    width: 400px;
+    height: 400px;
+    background-color: var(--mint);
+    bottom: -150px;
+    right: -150px;
+}
+
+.shape-3 {
+    width: 250px;
+    height: 250px;
+    background-color: var(--sky);
+    bottom: 50px;
+    left: -50px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+    .logo {
+        width: 100px;
+        height: 120px;
+    }
+
+    .app-title {
+        font-size: 3rem;
+    }
+
+    .app-subtitle {
+        font-size: 1.2rem;
+    }
+
+    .app-description {
+        font-size: 1rem;
+    }
+
+    .shape-1 {
+        width: 400px;
+        height: 400px;
+    }
+
+    .shape-2 {
+        width: 500px;
+        height: 500px;
+    }
+
+    .shape-3 {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+/* Animaciones para los corazones */
+.heart {
+    animation: pulse 2s infinite;
+}
+
+.heart-1 { animation-delay: 0s; }
+.heart-2 { animation-delay: 0.5s; }
+.heart-3 { animation-delay: 1s; }
+.heart-4 { animation-delay: 1.5s; }
+
+@keyframes pulse {
+    0% { transform: scale(1) rotate(45deg); }
+    50% { transform: scale(1.1) rotate(45deg); }
+    100% { transform: scale(1) rotate(45deg); }
+}

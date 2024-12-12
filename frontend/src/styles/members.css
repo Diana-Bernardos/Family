@@ -1,241 +1,169 @@
 /* src/styles/members.css */
+
+/* Variables globales */
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --background-color: #f8f9fa;
-    --text-color: #333;
-    --border-radius: 8px;
-    --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --transition-speed: 0.3s;
 }
 
-/* Lista de Miembros */
+/* Contenedor principal de miembros */
+.member-list {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.member-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 12px;
+}
+
+.member-list-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Grid de miembros */
 .members-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
-    padding: 12px 0;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 12px;
 }
 
+/* Tarjeta de miembro */
 .member-card {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: var(--box-shadow);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: all var(--transition-speed) ease;
+    box-shadow: var(--shadow-sm);
 }
 
+.member-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+/* Avatar del miembro */
 .member-avatar-container {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 8px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     overflow: hidden;
+    margin-bottom: 16px;
+    border: 3px solid var(--border-color);
+    transition: border-color var(--transition-speed) ease;
+}
+
+.member-card:hover .member-avatar-container {
+    border-color: var(--primary);
 }
 
 .member-avatar {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%;
 }
 
+/* Información del miembro */
 .member-info {
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
     width: 100%;
 }
 
 .member-info h3 {
-    margin: 0 0 4px 0;
-    color: var(--text-color);
-    font-size: 0.9rem;
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
 .member-email {
-    color: var(--secondary-color);
-    margin: 2px 0;
-    font-size: 0.75rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    color: var(--text-secondary);
+    margin: 4px 0;
+    font-size: 0.9rem;
 }
 
 .member-phone {
-    color: var(--secondary-color);
-    margin: 2px 0;
-    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 4px 0;
 }
 
-/* Detalle del Miembro */
-.member-detail {
-    max-width: 800px;
-    margin: 16px auto;
-    padding: 20px;
-    background: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-}
-
-.member-header {
-    margin-bottom: 20px;
-}
-
-.member-header h2 {
-    margin: 0;
-    color: var(--text-color);
-    font-size: 1.5rem;
-}
-
-.member-detail .member-avatar-container {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 16px;
-}
-
-.member-detail .member-data {
-    text-align: center;
-    margin-bottom: 16px;
-}
-
-.member-detail .member-info h3 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-}
-
-/* Botones y Acciones */
+/* Botones y acciones */
 .member-actions {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    margin-top: 16px;
+    width: 100%;
 }
 
-.btn {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    height: 24px;
-    line-height: 1;
+.button-group {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.2s;
+    gap: 8px;
 }
 
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-secondary {
-    background-color: var(--secondary-color);
-    color: white;
-}
-
-.btn-danger {
-    background-color: var(--danger-color);
-    color: white;
-}
-
-.btn-row {
-    display: flex;
-    gap: 4px;
-}
-
-.btn-row .btn {
+.button-group .btn {
     flex: 1;
 }
 
-/* Documentos */
-.member-documents-section {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+/* Estilos de eventos */
+.event-list {
+    margin-top: 20px;
 }
 
-.section-header {
+.event-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all var(--transition-speed) ease;
+}
+
+.event-card:hover {
+    transform: translateX(4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.event-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
-.document-upload label {
-    cursor: pointer;
+.event-title {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin: 0;
 }
 
-.documents-list {
-    background: white;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.document-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.document-item:last-child {
-    border-bottom: none;
-}
-
-.document-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.document-info i {
-    color: #dc3545;
-}
-
-.document-date {
-    color: var(--secondary-color);
-    font-size: 0.75rem;
-}
-
-.document-actions {
-    display: flex;
-    gap: 4px;
-}
-
-/* Eventos */
-.member-events-section {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-.events-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.event-card-compact {
-    background: white;
-    border-radius: 6px;
-    padding: 8px;
-    box-shadow: var(--box-shadow);
+.event-date {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .event-image {
     width: 100%;
-    height: 100px;
-    border-radius: 4px;
+    height: 200px;
+    border-radius: var(--border-radius);
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .event-image img {
@@ -244,136 +172,181 @@
     object-fit: cover;
 }
 
-.event-info h4 {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--text-color);
+/* Estilos de documentos */
+.documents-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
 }
 
-.event-date {
-    margin: 4px 0;
-    font-size: 0.75rem;
-    color: var(--secondary-color);
+.documents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.event-type {
-    font-size: 0.75rem;
-    color: var(--primary-color);
-    margin: 4px 0;
-}
-
-/* Estados y Mensajes */
-.loading {
-    text-align: center;
-    padding: 20px;
-    font-size: 1.2rem;
-    color: var(--secondary-color);
-}
-
-.error-message {
-    text-align: center;
-    padding: 20px;
-    margin: 20px;
-    background: #fff3f3;
-    border: 1px solid var(--danger-color);
+.document-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    color: var(--danger-color);
-}
-
-.no-documents,
-.no-events,
-.no-members {
-    text-align: center;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    color: var(--secondary-color);
-}
-
-/* Header de Listas */
-.member-list-header {
+    padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
-    padding: 0 12px;
+    transition: all var(--transition-speed) ease;
 }
 
-.member-list-header h2 {
-    margin: 0;
-    font-size: 1.2rem;
+.document-item:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
 }
 
-/* Formularios */
-.member-form {
-    max-width: 500px;
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
+.document-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.document-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
     border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
 }
 
-.form-group {
-    margin-bottom: 16px;
+.document-info {
+    display: flex;
+    flex-direction: column;
 }
 
-.form-group label {
-    display: block;
+.document-name {
+    font-weight: 500;
+    color: var(--text-primary);
     margin-bottom: 4px;
-    font-size: 0.9rem;
-    color: var(--text-color);
 }
 
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9rem;
+.document-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.document-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Estados de carga y error */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.loading {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.error-container {
+    padding: 20px;
+    text-align: center;
+}
+
+.error-message {
+    background: var(--bg-secondary);
+    color: var(--danger);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--danger);
+}
+
+.no-items {
+    text-align: center;
+    padding: 40px;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+}
+
+/* Upload area */
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover {
+    border-color: var(--primary);
+    background: var(--bg-secondary);
+}
+
+.upload-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .members-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-
-    .member-detail {
-        margin: 12px;
-        padding: 16px;
-    }
-
-    .events-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-
-    .member-actions {
-        flex-direction: column;
-    }
-
-    .member-actions .btn {
-        width: 100%;
+        grid-template-columns: 1fr;
     }
 
     .member-list-header {
         flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .member-card {
+        padding: 16px;
+    }
+
+    .member-avatar-container {
+        width: 80px;
+        height: 80px;
+    }
+
+    .document-item {
+        flex-direction: column;
         gap: 12px;
         text-align: center;
     }
+
+    .document-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .event-image {
+        height: 150px;
+    }
 }
 
-/* Hover Effects */
-.btn:hover {
-    opacity: 0.9;
+/* Modo oscuro específico */
+[data-theme='dark'] .member-card {
+    border-color: var(--border-color);
 }
 
-.member-card:hover {
-    transform: translateY(-2px);
-    transition: transform 0.2s;
+[data-theme='dark'] .member-card:hover {
+    border-color: var(--primary);
 }
 
-.document-item:hover {
-    background-color: #f8f9fa;
+[data-theme='dark'] .upload-area {
+    background: var(--bg-secondary);
+}
+
+[data-theme='dark'] .document-icon {
+    background: var(--bg-secondary);
 }

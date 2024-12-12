@@ -5,53 +5,40 @@ import { Link, useLocation } from 'react-router-dom';
 const Navigation = () => {
     const location = useLocation();
 
-    // Función para determinar si un enlace está activo
-    const isActive = (path) => {
-        if (path === '/') {
-            return location.pathname === '/';
-        }
-        return location.pathname.startsWith(path);
-    };
-
     return (
         <nav className="main-navigation">
             <div className="nav-container">
-                <div className="nav-logo">
-                    <Link to="/">
-                        Calendario Familiar
-                    </Link>
-                </div>
+                <Link to="/" className="nav-logo">
+                    <div className="logo-small">
+                        <div className="hearts">
+                            <div className="heart heart-1"></div>
+                            <div className="heart heart-2"></div>
+                        </div>
+                    </div>
+                    <span>FAMILY</span>
+                </Link>
                 
                 <div className="nav-links">
                     <Link 
                         to="/" 
-                        className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                        className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
                     >
                         Calendario
                     </Link>
                     
                     <Link 
                         to="/members" 
-                        className={`nav-link ${isActive('/members') ? 'active' : ''}`}
+                        className={`nav-link ${location.pathname.includes('/members') ? 'active' : ''}`}
                     >
                         Miembros
                     </Link>
 
-                    <div className="nav-actions">
-                        <Link 
-                            to="/new-event"
-                            className="btn btn-primary"
-                        >
-                            Nuevo Evento
-                        </Link>
-                        
-                        <Link 
-                            to="/new-member"
-                            className="btn btn-outline-primary"
-                        >
-                            Añadir Miembro
-                        </Link>
-                    </div>
+                    <Link 
+                        to="/new-event"
+                        className="btn btn-primary"
+                    >
+                        Nuevo Evento
+                    </Link>
                 </div>
             </div>
         </nav>

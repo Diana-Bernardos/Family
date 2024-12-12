@@ -1,0 +1,47 @@
+/* src/styles/theme.css */
+:root {
+    /* Paleta de colores del logo */
+    --peach: #FFE4D6;
+    --mint: #D8E7DC;
+    --sky: #E1EEF3;
+    --navy: #1F2937;
+    
+    /* Variables del sistema */
+    --primary: var(--navy);
+    --bg-primary: white;
+    --bg-secondary: var(--peach);
+    --bg-accent: var(--mint);
+    --bg-light: var(--sky);
+    
+    /* Texto */
+    --text-primary: var(--navy);
+    --text-secondary: #4B5563;
+    
+    /* Bordes y sombras */
+    --border-color: #E5E7EB;
+    --border-radius: 8px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Modo oscuro */
+[data-theme='dark'] {
+    --bg-primary: #1F2937;
+    --bg-secondary: #374151;
+    --text-primary: #F3F4F6;
+    --text-secondary: #D1D5DB;
+    --border-color: #4B5563;
+}
+
+/* Estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}

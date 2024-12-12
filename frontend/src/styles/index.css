@@ -125,13 +125,15 @@ body {
     background-color: rgba(220, 53, 69, 0.1);
     margin: 10px 0;
 }
+/* Añadir a styles/index.css */
 .main-navigation {
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-primary);
+    box-shadow: var(--shadow-sm);
     padding: 1rem 0;
     position: sticky;
     top: 0;
     z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .nav-container {
@@ -143,52 +145,46 @@ body {
     align-items: center;
 }
 
-.nav-logo a {
-    font-size: 1.5rem;
-    color: var(--primary-color);
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     text-decoration: none;
-    font-weight: bold;
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.logo-small {
+    width: 30px;
+    height: 30px;
+    position: relative;
+    border: 2px solid var(--navy);
+    border-radius: 6px;
 }
 
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .nav-link {
     text-decoration: none;
-    color: var(--text-color);
-    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 5px 10px;
     border-radius: var(--border-radius);
-    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-    color: var(--primary-color);
-    background-color: rgba(0, 123, 255, 0.1);
+    color: var(--navy);
+    background-color: var(--bg-secondary);
 }
 
 .nav-link.active {
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-.nav-actions {
-    display: flex;
-    gap: 1rem;
-    margin-left: 1rem;
-}
-
-.btn-outline-primary {
-    background-color: transparent;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-}
-
-.btn-outline-primary:hover {
-    background-color: var(--primary-color);
-    color: white;
+    color: var(--navy);
+    background-color: var(--bg-secondary);
 }
 
 @media (max-width: 768px) {
@@ -198,37 +194,25 @@ body {
     }
 
     .nav-links {
-        flex-direction: column;
         width: 100%;
-        gap: 1rem;
-    }
-
-    .nav-actions {
-        display: flex;
         flex-direction: column;
-        width: 100%;
-        margin-left: 0;
+        gap: 0.5rem;
     }
 
     .nav-link {
         width: 100%;
         text-align: center;
-    }
-
-    .btn {
-        width: 100%;
-        text-align: center;
+        padding: 10px;
     }
 }
 /* Añadir a src/styles/index.css */
 
 .calendar-container {
-    background: white;
+    background: var(--bg-primary);
     border-radius: var(--border-radius);
     padding: 20px;
-    box-shadow: var(--box-shadow);
-    margin: 20px auto;
-    max-width: 1200px;
+    margin: 20px;
+    box-shadow: var(--shadow-sm);
 }
 
 .calendar-header {
@@ -251,28 +235,37 @@ body {
 
 /* Estilos para FullCalendar */
 .fc {
-    font-family: inherit;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
 }
 
-.fc .fc-toolbar-title {
-    font-size: 1.5rem;
-    color: var(--text-color);
+.fc-toolbar-title {
+    color: var(--navy) !important;
+    font-weight: 600 !important;
 }
 
-.fc .fc-button-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+.fc-button-primary {
+    background-color: var(--navy) !important;
+    border-color: var(--navy) !important;
 }
 
-.fc .fc-button-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+.fc-button-primary:hover {
+    background-color: transparent !important;
+    color: var(--navy) !important;
 }
 
-.fc .fc-day-today {
-    background-color: rgba(0, 123, 255, 0.1) !important;
+.fc-daygrid-day {
+    background: var(--bg-primary);
 }
 
+.fc-daygrid-day-number {
+    color: var(--text-primary);
+}
+
+.fc-event {
+    border-radius: var(--border-radius) !important;
+    border: none !important;
+}
 .event-image img {
     width: 100%;
     height: 100%;
@@ -368,4 +361,94 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+/* Añadir a src/styles/index.css */
+.theme-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Animación suave para cambios de tema */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* src/styles/index.css */
+.btn {
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: transparent;
+    color: var(--primary);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: white;
+    border-color: var(--secondary);
+}
+
+.btn-secondary:hover {
+    background-color: transparent;
+    color: var(--secondary);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.btn-danger:hover {
+    background-color: transparent;
+    color: var(--danger);
+}
+
+/* Estilo para botones pequeños */
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+/* Estilo para botones deshabilitados */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
