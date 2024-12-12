@@ -105,7 +105,7 @@ const EditEventForm = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    required
+                    
                 />
             </div>
 
@@ -116,7 +116,7 @@ const EditEventForm = () => {
                     name="event_date"
                     value={formData.event_date}
                     onChange={handleChange}
-                    required
+                    
                 />
             </div>
 
@@ -126,7 +126,7 @@ const EditEventForm = () => {
                     name="event_type"
                     value={formData.event_type}
                     onChange={handleChange}
-                    required
+                    
                 >
                     <option value="">Seleccionar tipo</option>
                     {EVENT_TYPES.map(type => (
