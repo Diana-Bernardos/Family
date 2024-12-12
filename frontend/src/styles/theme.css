@@ -1,47 +1,68 @@
-/* src/styles/theme.css */
+/* En src/styles/theme.css */
 :root {
     /* Paleta de colores del logo */
     --peach: #FFE4D6;
     --mint: #D8E7DC;
     --sky: #E1EEF3;
     --navy: #1F2937;
-    
-    /* Variables del sistema */
+
+    /* Sistema de colores */
     --primary: var(--navy);
-    --bg-primary: white;
+    --secondary: var(--peach);
+    --accent: var(--mint);
+    
+    /* Fondos actualizados */
+    --bg-primary: #FFFFFF;
     --bg-secondary: var(--peach);
     --bg-accent: var(--mint);
     --bg-light: var(--sky);
     
-    /* Texto */
-    --text-primary: var(--navy);
-    --text-secondary: #4B5563;
-    
-    /* Bordes y sombras */
-    --border-color: #E5E7EB;
-    --border-radius: 8px;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Color de fondo general */
+    --bg-gradient: linear-gradient(135deg, var(--sky) 0%, var(--mint) 50%, var(--peach) 100%);
+}
+
+/* Ajustar el fondo del body */
+body {
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: var(--text-primary);
 }
 
 /* Modo oscuro */
 [data-theme='dark'] {
     --bg-primary: #1F2937;
     --bg-secondary: #374151;
-    --text-primary: #F3F4F6;
-    --text-secondary: #D1D5DB;
-    --border-color: #4B5563;
+    --bg-accent: #4B5563;
+    --bg-light: #111827;
+    --bg-gradient: linear-gradient(135deg, #1F2937 0%, #374151 50%, #4B5563 100%);
 }
 
-/* Estilos base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Contenedor principal */
+.main-content {
+    background: transparent;
+    min-height: calc(100vh - 64px); /* Altura del navegador */
+    padding: 20px;
 }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+/* Ajustar cards para mejor contraste */
+.card, 
+.member-card, 
+.event-card {
+    background: var(--bg-primary);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Navegación */
+.main-navigation {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Calendario */
+.calendar-container {
+    background: var(--bg-primary);
+    margin: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
 }

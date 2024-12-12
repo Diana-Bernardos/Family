@@ -1,88 +1,76 @@
+// src/components/MemberDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
-
-
-
-
-const DocumentList = ({ documents, onDelete, onDownload }) => (
-    <div className="documents-list">
-        {documents.map(doc => (
-            <div key={doc.id} className="document-item">
-                <div className="document-info">
-                    <i className="fas fa-file-pdf"></i>
-                    <span>{doc.document_name}</span>
-                </div>
-                <div className="document-actions">
-                    <button 
-                        onClick={() => onDownload(doc.id, doc.document_name)}
-                        className="btn btn-secondary btn-sm"
-                    >
-                        Descargar
-                    </button>
-                    <button 
-                        onClick={() => onDelete(doc.id)}
-                        className="btn btn-danger btn-sm"
-                    >
-                        Eliminar
-                    </button>
-                </div>
-            </div>
-        ))}
-    </div>
-);
+import DocumentPreview from './DocumentPreview';
 
 const MemberDetail = () => {
     const [member, setMember] = useState(null);
     const [memberEvents, setMemberEvents] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
     const { id } = useParams();
     const navigate = useNavigate();
-    const [documents, setDocuments] = useState([]);
-    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
-        loadMemberData();
-        loadDocuments();
+        loadAllData();
     }, [id]);
 
-    const loadDocuments = async () => {
+    const loadAllData = async () => {
         try {
-            const data = await api.getMemberDocuments(id);
-            setDocuments(data);
+            setLoading(true);
+            const [memberData, eventsData, documentsData] = await Promise.all([
+                api.getMember(id),
+                api.getMemberEvents(id),
+                api.getMemberDocuments(id)
+            ]);
+            setMember(memberData);
+            setMemberEvents(eventsData);
+            setDocuments(documentsData);
         } catch (error) {
-            console.error('Error al cargar documentos:', error);
+            setError('Error al cargar los datos del miembro');
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
+            try {
+                await api.deleteMember(id);
+                navigate('/members');
+            } catch (error) {
+                setError('Error al eliminar el miembro');
+            }
         }
     };
 
     const handleFileUpload = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
-      
-        if (file.type !== 'application/pdf') {
-          alert('Solo se permiten archivos PDF');
-          return;
-        }
-      
+
         if (file.size > 10 * 1024 * 1024) {
-          alert('El archivo no puede ser mayor a 10MB');
-          return;
+            alert('El archivo no puede ser mayor a 10MB');
+            return;
         }
-      
+
         try {
-          setUploading(true);
-          await api.uploadDocument(member.id, file);
-          const updatedDocuments = await api.getMemberDocuments(member.id);
-          setDocuments(updatedDocuments);
+            setUploading(true);
+            await api.uploadDocument(id, file);
+            const updatedDocs = await api.getMemberDocuments(id);
+            setDocuments(updatedDocs);
         } catch (error) {
-          setError('Error al subir el documento');
-          console.error('Error:', error);
+            setError('Error al subir el documento');
+            console.error('Error:', error);
         } finally {
-          setUploading(false);
-          event.target.value = ''; // Limpiar input
+            setUploading(false);
+            event.target.value = ''; // Limpiar input
         }
-      };
+    };
+
     const handleDownload = async (documentId, fileName) => {
         try {
             const blob = await api.downloadDocument(documentId);
@@ -95,7 +83,8 @@ const MemberDetail = () => {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch (error) {
-            console.error('Error al descargar documento:', error);
+            setError('Error al descargar el documento');
+            console.error('Error:', error);
         }
     };
 
@@ -105,34 +94,8 @@ const MemberDetail = () => {
                 await api.deleteDocument(documentId);
                 setDocuments(documents.filter(doc => doc.id !== documentId));
             } catch (error) {
-                console.error('Error al eliminar documento:', error);
-            }
-        }}
-
-    const loadMemberData = async () => {
-        try {
-            setLoading(true);
-            const [memberData, eventsData] = await Promise.all([
-                api.getMember(id),
-                api.getMemberEvents(id)
-            ]);
-            setMember(memberData);
-            setMemberEvents(eventsData);
-        } catch (error) {
-            setError('Error al cargar los datos del miembro');
-            console.error('Error:', error);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    const handleDelete = async () => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar este miembro?')) {
-            try {
-                await api.deleteMember(id);
-                navigate('/members');
-            } catch (error) {
-                setError('Error al eliminar el miembro');
+                setError('Error al eliminar el documento');
+                console.error('Error:', error);
             }
         }
     };
@@ -173,21 +136,66 @@ const MemberDetail = () => {
                         onClick={() => navigate(`/edit-member/${id}`)} 
                         className="btn btn-primary"
                     >
-                        Editar
+                        ✏️ Editar
                     </button>
                     <button 
                         onClick={handleDelete}
                         className="btn btn-danger"
                     >
-                        Eliminar
+                        🗑️ Eliminar
                     </button>
                     <button 
                         onClick={() => navigate('/members')}
                         className="btn btn-secondary"
                     >
-                        Volver
+                        ← Volver
                     </button>
                 </div>
+            </div>
+
+            <div className="member-documents-section">
+                <h3>Documentos</h3>
+                <div className="document-upload">
+                    <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                        style={{ display: 'none' }}
+                        id="document-upload"
+                    />
+                    <label htmlFor="document-upload" className="btn btn-primary">
+                        {uploading ? '📤 Subiendo...' : '📄 Subir Documento'}
+                    </label>
+                </div>
+                
+                {documents.length === 0 ? (
+                    <p className="no-documents">No hay documentos adjuntos</p>
+                ) : (
+                    <div className="documents-grid">
+                        {documents.map(doc => (
+                            <div key={doc.id} className="document-preview-wrapper">
+                                <DocumentPreview document={doc} />
+                                <div className="document-actions">
+                                    <button 
+                                        onClick={() => handleDownload(doc.id, doc.document_name)}
+                                        className="btn btn-secondary btn-sm"
+                                        title="Descargar"
+                                    >
+                                        ⬇️
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteDocument(doc.id)}
+                                        className="btn btn-danger btn-sm"
+                                        title="Eliminar"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="member-events-section">
@@ -217,43 +225,15 @@ const MemberDetail = () => {
                                     to={`/event/${event.id}`}
                                     className="btn btn-secondary"
                                 >
-                                    Ver
+                                    Ver Detalles
                                 </Link>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
-            <div className="member-documents-section">
-                <h3>Documentos</h3>
-                <div className="document-upload">
-                    <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileUpload}
-                        disabled={uploading}
-                        style={{ display: 'none' }}
-                        id="document-upload"
-                    />
-                    <label htmlFor="document-upload" className="btn btn-primary">
-                        {uploading ? 'Subiendo...' : 'Subir Documento'}
-                    </label>
-                </div>
-                
-                {documents.length === 0 ? (
-                    <p className="no-documents">No hay documentos adjuntos</p>
-                ) : (
-                    <DocumentList 
-                        documents={documents}
-                        onDelete={handleDeleteDocument}
-                        onDownload={handleDownload}
-                    />
-                )}
-            </div>
         </div>
     );
-    
-
-    };
+};
 
 export default MemberDetail;

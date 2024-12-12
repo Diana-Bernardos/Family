@@ -1,15 +1,8 @@
 /* src/styles/members.css */
 
-/* Variables globales */
-:root {
-    --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --card-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    --transition-speed: 0.3s;
-}
-
-/* Contenedor principal de miembros */
+/* === Lista de Miembros === */
 .member-list {
-    padding: 20px;
+    padding: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -18,57 +11,56 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding: 0 12px;
+    margin-bottom: 1.5rem;
+    padding: 0 0.75rem;
 }
 
 .member-list-header h2 {
     margin: 0;
-    color: var(--text-primary);
+    color: var(--navy);
     font-size: 1.5rem;
     font-weight: 600;
 }
 
-/* Grid de miembros */
+/* === Grid de Miembros === */
 .members-grid {
     display: grid;
+    background: transparent;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 12px;
+    gap: 1.5rem;
+    padding: 0.75rem;
 }
 
-/* Tarjeta de miembro */
+/* === Tarjeta de Miembro === */
 .member-card {
     background: var(--bg-primary);
-    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: all var(--transition-speed) ease;
-    box-shadow: var(--shadow-sm);
 }
 
 .member-card:hover {
     transform: translateY(-4px);
+    border-color: var(--navy);
     box-shadow: var(--shadow-md);
-    border-color: var(--primary);
 }
 
-/* Avatar del miembro */
 .member-avatar-container {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: 16px;
-    border: 3px solid var(--border-color);
-    transition: border-color var(--transition-speed) ease;
+    margin-bottom: 1rem;
+    border: 3px solid var(--mint);
+    transition: border-color 0.3s ease;
 }
 
 .member-card:hover .member-avatar-container {
-    border-color: var(--primary);
+    border-color: var(--navy);
 }
 
 .member-avatar {
@@ -77,171 +69,107 @@
     object-fit: cover;
 }
 
-/* Información del miembro */
 .member-info {
     text-align: center;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
     width: 100%;
 }
 
 .member-info h3 {
-    margin: 0 0 8px 0;
-    color: var(--text-primary);
+    color: var(--navy);
     font-size: 1.1rem;
+    margin: 0 0 0.5rem 0;
     font-weight: 600;
 }
 
 .member-email {
     color: var(--text-secondary);
-    margin: 4px 0;
     font-size: 0.9rem;
+    margin: 0.25rem 0;
 }
 
 .member-phone {
     color: var(--text-muted);
     font-size: 0.85rem;
-    margin: 4px 0;
+    margin: 0.25rem 0;
 }
 
-/* Botones y acciones */
+/* === Acciones de Miembro === */
 .member-actions {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
+}
+
+.member-actions .btn {
     width: 100%;
+    justify-content: center;
 }
 
 .button-group {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
 .button-group .btn {
     flex: 1;
 }
 
-/* Estilos de eventos */
-.event-list {
-    margin-top: 20px;
-}
-
-.event-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 16px;
-    margin-bottom: 12px;
-    transition: all var(--transition-speed) ease;
-}
-
-.event-card:hover {
-    transform: translateX(4px);
-    border-color: var(--primary);
-    box-shadow: var(--shadow-sm);
-}
-
-.event-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.event-title {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.event-date {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.event-image {
-    width: 100%;
-    height: 200px;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    margin-bottom: 12px;
-}
-
-.event-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Estilos de documentos */
+/* === Documentos === */
 .documents-section {
-    margin-top: 24px;
-    padding-top: 20px;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
     border-top: 1px solid var(--border-color);
 }
 
-.documents-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
 .document-item {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all var(--transition-speed) ease;
-}
-
-.document-item:hover {
-    border-color: var(--primary);
-    transform: translateX(4px);
-    box-shadow: var(--shadow-sm);
-}
-
-.document-preview {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.document-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 1rem;
     background: var(--bg-primary);
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.document-item:hover {
+    transform: translateX(4px);
+    border-color: var(--navy);
+    box-shadow: var(--shadow-sm);
 }
 
 .document-info {
-    display: flex;
-    flex-direction: column;
+    flex: 1;
+    margin: 0 1rem;
 }
 
 .document-name {
-    font-weight: 500;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
 }
 
 .document-date {
+    color: var(--text-secondary);
     font-size: 0.8rem;
-    color: var(--text-muted);
 }
 
 .document-actions {
     display: flex;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
-/* Estados de carga y error */
+/* === Estados === */
+.no-members {
+    text-align: center;
+    padding: 2.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+}
+
 .loading-container {
     display: flex;
     justify-content: center;
@@ -249,68 +177,21 @@
     min-height: 200px;
 }
 
-.loading {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-}
-
-.error-container {
-    padding: 20px;
-    text-align: center;
-}
-
-.error-message {
-    background: var(--bg-secondary);
-    color: var(--danger);
-    padding: 16px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--danger);
-}
-
-.no-items {
-    text-align: center;
-    padding: 40px;
-    background: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    color: var(--text-secondary);
-}
-
-/* Upload area */
-.upload-area {
-    border: 2px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all var(--transition-speed) ease;
-    margin-bottom: 20px;
-}
-
-.upload-area:hover {
-    border-color: var(--primary);
-    background: var(--bg-secondary);
-}
-
-.upload-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-    color: var(--text-secondary);
-}
-
-/* Responsive */
+/* === Media Queries === */
 @media (max-width: 768px) {
     .members-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
     .member-list-header {
         flex-direction: column;
-        gap: 16px;
+        gap: 1rem;
         text-align: center;
     }
 
     .member-card {
-        padding: 16px;
+        padding: 1rem;
     }
 
     .member-avatar-container {
@@ -320,33 +201,25 @@
 
     .document-item {
         flex-direction: column;
-        gap: 12px;
         text-align: center;
+        gap: 0.5rem;
     }
 
     .document-actions {
         width: 100%;
         justify-content: center;
     }
-
-    .event-image {
-        height: 150px;
-    }
 }
 
-/* Modo oscuro específico */
+/* === Modo Oscuro === */
 [data-theme='dark'] .member-card {
-    border-color: var(--border-color);
+    background: var(--bg-primary);
 }
 
-[data-theme='dark'] .member-card:hover {
-    border-color: var(--primary);
+[data-theme='dark'] .member-info h3 {
+    color: var(--text-primary);
 }
 
-[data-theme='dark'] .upload-area {
-    background: var(--bg-secondary);
-}
-
-[data-theme='dark'] .document-icon {
-    background: var(--bg-secondary);
+[data-theme='dark'] .document-item {
+    background: var(--bg-primary);
 }

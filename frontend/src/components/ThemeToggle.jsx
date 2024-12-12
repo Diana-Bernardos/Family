@@ -1,16 +1,21 @@
 // src/components/ThemeToggle.jsx
-import React, { useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import React, { useState, useEffect } from 'react';
 
 const ThemeToggle = () => {
-    const [theme, setTheme] = useLocalStorage('theme', 'light');
+    const [theme, setTheme] = useState(() => {
+        // Obtener el tema guardado en localStorage o usar 'light' por defecto
+        return localStorage.getItem('theme') || 'light';
+    });
 
     useEffect(() => {
+        // Aplicar el tema al elemento raíz
         document.documentElement.setAttribute('data-theme', theme);
+        // Guardar el tema en localStorage
+        localStorage.setItem('theme', theme);
     }, [theme]);
 
     const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
+        setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
     };
 
     return (

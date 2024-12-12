@@ -1,67 +1,187 @@
 /* src/styles/components.css */
-/* Navegación */
+
+/* === Contenedor Principal === */
+.main-content {
+    background: transparent;
+    min-height: calc(100vh - 64px);
+    padding: 20px;
+}
+
+/* === Navegación === */
 .main-navigation {
-    background-color: var(--bg-primary);
+    background: var(--bg-primary);
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: 1000;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-md);
 }
 
-/* Logo y título */
-.logo-container {
+.nav-logo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.app-logo {
-    width: 40px;
-    height: 40px;
-}
-
-.app-title {
+    gap: 10px;
+    text-decoration: none;
+    color: var(--navy);
     font-weight: 700;
-    color: var(--primary);
     font-size: 1.25rem;
 }
 
-/* Tarjetas de miembros */
-.member-card {
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--navy);
+    background-color: var(--bg-secondary);
+}
+
+.nav-link.active {
+    color: var(--navy);
+    background-color: var(--bg-secondary);
+}
+
+/* === Cards === */
+.card {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    transition: all var(--transition-speed) ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* === Botones === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.025em;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: var(--btn-shadow);
+    gap: 0.5rem;
+    text-transform: uppercase;
+}
+
+.btn-primary {
+    background-color: var(--navy);
+    color: white;
+    border-color: var(--navy);
+}
+
+.btn-primary:hover {
+    background-color: transparent;
+    color: var(--navy);
+    box-shadow: var(--btn-hover-shadow);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--mint);
+    color: var(--navy);
+    border-color: var(--mint);
+}
+
+.btn-secondary:hover {
+    background-color: transparent;
+    color: var(--navy);
+    box-shadow: var(--btn-hover-shadow);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.btn-danger:hover {
+    background-color: transparent;
+    color: var(--danger);
+    box-shadow: var(--btn-hover-shadow);
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* === Formularios === */
+.form-group {
+    margin-bottom: 1rem;
+    background: var(--bg-primary);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
     border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
 }
 
-.member-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--primary);
+.form-control:focus {
+    outline: none;
+    border-color: var(--navy);
+    box-shadow: 0 0 0 2px var(--mint);
 }
 
-.member-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--secondary);
-    margin-bottom: var(--spacing-md);
-}
-
-/* Calendario */
+/* === Calendario === */
 .calendar-container {
     background: var(--bg-primary);
-    padding: var(--spacing-lg);
     border-radius: var(--border-radius);
-    margin: var(--spacing-lg) 0;
+    padding: 1.5rem;
+    margin: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
 }
 
 .fc {
@@ -69,53 +189,239 @@
 }
 
 .fc-toolbar-title {
-    color: var(--primary) !important;
+    color: var(--navy) !important;
+    font-weight: 600 !important;
 }
 
 .fc-button-primary {
-    background-color: var(--primary) !important;
-    border-color: var(--primary) !important;
+    background-color: var(--navy) !important;
+    border-color: var(--navy) !important;
 }
 
-/* Documentos */
-.document-card {
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-md);
+.fc-button-primary:hover {
+    background-color: transparent !important;
+    color: var(--navy) !important;
+}
+
+/* === Documentos === */
+.document-item {
     background: var(--bg-primary);
     border-radius: var(--border-radius);
-    margin-bottom: var(--spacing-sm);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
 }
 
-.document-icon {
-    font-size: 1.5rem;
-    margin-right: var(--spacing-md);
-    color: var(--primary);
+.document-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
 }
 
-/* Formularios */
-.form-group {
-    margin-bottom: var(--spacing-md);
-}
-
-.form-label {
-    display: block;
-    margin-bottom: var(--spacing-xs);
+/* === Estados === */
+.loading {
+    text-align: center;
+    padding: 2rem;
     color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
     border-radius: var(--border-radius);
-    transition: all var(--transition-speed) ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
 }
 
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--secondary);
+.error-message {
+    background-color: var(--danger);
+    color: white;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+/* === Tema Toggle === */
+.theme-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+}
+
+/* === Modo Oscuro === */
+[data-theme='dark'] .btn-primary {
+    background-color: var(--peach);
+    color: var(--navy);
+    border-color: var(--peach);
+}
+
+[data-theme='dark'] .btn-primary:hover {
+    background-color: transparent;
+    color: var(--peach);
+}
+
+[data-theme='dark'] .btn-secondary {
+    background-color: var(--sky);
+    color: var(--navy);
+    border-color: var(--sky);
+}
+
+[data-theme='dark'] .btn-secondary:hover {
+    background-color: transparent;
+    color: var(--sky);
+}
+
+/* === Media Queries === */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 10px;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem;
+    }
+
+    .calendar-container {
+        margin: 10px;
+        padding: 1rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+    
+    .theme-toggle-btn {
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+    }
+}
+.document-preview-container {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    width: 120px;
+    height: 160px;
+    margin: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.document-preview-container:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.doc-preview {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 10px;
+}
+
+.doc-preview.pdf {
+    background: linear-gradient(135deg, #FF5252, #FF1744);
+}
+
+.doc-preview.word {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.doc-preview.excel {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
+}
+
+.doc-preview.default {
+    background: linear-gradient(135deg, #9E9E9E, #616161);
+}
+
+.doc-icon {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.doc-name {
+    font-size: 12px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    padding: 0 5px;
+}
+
+.document-preview-info {
+    padding: 8px;
+    background: var(--bg-primary);
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+
+/* Modo oscuro */
+[data-theme='dark'] .document-preview-container {
+    background: var(--bg-secondary);
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .documents-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .document-preview-container {
+        width: 100px;
+        height: 140px;
+    }
 }
