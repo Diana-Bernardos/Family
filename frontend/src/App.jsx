@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
@@ -12,6 +11,9 @@ import MemberDetail from './components/MemberDetail';
 import EditMemberForm from './components/EditMemberForm';
 import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
+
+// Importación del logo
+import logo from './assets/images/family-logo.png';
 
 // Importación de estilos
 import './styles/theme.css';
@@ -33,7 +35,12 @@ function App() {
             ) : (
                 <Router>
                     <div className="app-container">
+            
+
+                        {/* Navegación */}
                         <Navigation />
+
+                        {/* Contenido principal */}
                         <main className="main-content">
                             <Routes>
                                 <Route path="/" element={<Calendar />} />
@@ -46,6 +53,8 @@ function App() {
                                 <Route path="/edit-member/:id" element={<EditMemberForm />} />
                             </Routes>
                         </main>
+
+                        {/* Botón para alternar tema */}
                         <ThemeToggle />
                     </div>
                 </Router>

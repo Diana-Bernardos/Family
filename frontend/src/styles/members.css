@@ -50,8 +50,8 @@
 }
 
 .member-avatar-container {
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     overflow: hidden;
     margin-bottom: 1rem;
@@ -98,13 +98,18 @@
 .member-actions {
     width: 100%;
     display: flex;
+    justify-content: center;
+    align-items: center;
     flex-direction: column;
     gap: 0.5rem;
 }
 
 .member-actions .btn {
-    width: 100%;
+    width:65%;
     justify-content: center;
+    
+  
+    
 }
 
 .button-group {

@@ -58,7 +58,7 @@ const MemberForm = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    
+                    required
                 />
             </div>
 
@@ -69,6 +69,7 @@ const MemberForm = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    required
                     
                 />
             </div>

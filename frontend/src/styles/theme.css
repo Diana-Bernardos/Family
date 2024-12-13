@@ -30,9 +30,9 @@ body {
 
 /* Modo oscuro */
 [data-theme='dark'] {
-    --bg-primary: #1F2937;
-    --bg-secondary: #374151;
-    --bg-accent: #4B5563;
+    --bg-primary: #5a7598;
+    --bg-secondary: #acb6c5;
+    --bg-accent: #788aa4;
     --bg-light: #111827;
     --bg-gradient: linear-gradient(135deg, #1F2937 0%, #374151 50%, #4B5563 100%);
 }

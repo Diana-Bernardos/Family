@@ -1,0 +1,98 @@
+/* src/styles/logo.css */
+.logo {
+    display: flex;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+}
+
+
+.logo-image {
+    width: 150px; /* Cambia según el tamaño deseado */
+    height: auto; /* Mantiene las proporciones */
+}
+
+.book-shape {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--navy);
+    border-radius: 4px;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 4px;
+    gap: 4px;
+    background-color: transparent;
+}
+
+.heart {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--navy);
+    position: relative;
+    transform: rotate(45deg);
+    border-radius: 0;
+    margin: auto;
+}
+
+.heart::before,
+.heart::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--navy);
+    border-radius: 50%;
+    background-color: transparent;
+}
+
+.heart::before {
+    left: -50%;
+    border-right: none;
+}
+
+.heart::after {
+    top: -50%;
+    border-bottom: none;
+}
+
+/* Navegación */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    border-radius: 10px;
+}
+
+.nav-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 1px;
+}
+
+/* Modo oscuro */
+[data-theme='dark'] .book-shape,
+[data-theme='dark'] .heart,
+[data-theme='dark'] .heart::before,
+[data-theme='dark'] .heart::after {
+    border-color: var(--text-primary);
+}
+
+[data-theme='dark'] .nav-title {
+    color: var(--text-primary);
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+}

@@ -1,6 +1,8 @@
 // src/components/SplashScreen.jsx
+// src/components/SplashScreen.jsx
 import React, { useEffect, useState } from 'react';
 import '../styles/splash.css';
+import Logo from './Logo';
 
 const SplashScreen = ({ onFinish }) => {
     const [isVisible, setIsVisible] = useState(true);
@@ -16,20 +18,18 @@ const SplashScreen = ({ onFinish }) => {
 
     return isVisible ? (
         <div className="splash-screen">
+        
             <div className="splash-content">
-                <div className="logo-container">
-                    <div className="logo">
-                        <div className="hearts">
-                            <div className="heart heart-1"></div>
-                            <div className="heart heart-2"></div>
-                            <div className="heart heart-3"></div>
-                            <div className="heart heart-4"></div>
-                        </div>
-                    </div>
+                <div className="splash-logo">
+                    <img 
+                        src="/static/media/family-logo.481e22f25cac2029f077.png"
+                        alt="Family App Logo"
+                        className="splash-logo-image" 
+                    />
                 </div>
-                <h1 className="app-title">FAMILY</h1>
-                <p className="app-subtitle">FAMILY ORGANIZATION APP</p>
-                <p className="app-description">for wide of users</p>
+                <h1>FAMILY</h1>
+                <p className="splash-subtitle">FAMILY ORGANIZATION APP</p>
+                <p className="splash-description">for wide of users</p>
             </div>
             <div className="splash-background">
                 <div className="shape shape-1"></div>
