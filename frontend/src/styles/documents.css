@@ -1,92 +1,27 @@
-/* src/styles/documents.css */
-.documents-list {
+/* Estilos para el contenedor principal de documentos */
+.document-preview-container {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+/* Estilos para la previsualización de documentos */
+.doc-preview {
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-}
-
-.document-item {
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    transition: all 0.2s ease;
+    padding: 1rem;
+    border-radius: 0.5rem;
 }
 
-.document-item:hover {
-    border-color: var(--primary);
-    transform: translateX(4px);
+.doc-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.document-preview {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.document-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-primary);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-}
-
-.document-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.document-name {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.document-date {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.document-actions {
-    display: flex;
-    gap: 8px;
-}
-
-/* Estilo para el área de subida de documentos */
-.document-upload-area {
-    border: 2px dashed var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 20px;
-
-}
-
-.document-upload-area:hover {
-    border-color: var(--primary);
-    background: var(--bg-secondary);
-}
-
-.document-upload-area.dragging {
-    border-color: var(--primary);
-    background: var(--bg-secondary);
-}
-
-.document-upload-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-}
-
-.document-upload-text {
-    color: var(--text-secondary);
-    margin: 0;
+/* Estilos para el nombre del documento */
+.doc-name {
+    max-width: 100%;
+    overflow: hidden;
 }

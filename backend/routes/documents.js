@@ -1,29 +1,28 @@
-// backend/routes/documents.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const pool = require('../config/database');
 
-// Configuración de multer para almacenar en memoria
-const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB
-    },
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') {
-            cb(null, true);
-        } else {
-            cb(new Error('Solo se permiten archivos PDF'));
-        }
-    }
-});
+// Configuración de multer simplificada
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 15 * 1024 * 1024 } // 15MB
+}).single('document');
 
-// Obtener documentos de un miembro
+// Obtener documentos
 router.get('/:memberId/documents', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT id, document_name, document_type, upload_date FROM member_documents WHERE member_id = ?',
+            `SELECT 
+                id, 
+                document_name, 
+                document_type, 
+                file_size,
+                upload_date 
+            FROM member_documents 
+            WHERE member_id = ? 
+            ORDER BY upload_date DESC`,
             [req.params.memberId]
         );
         res.json(rows);
@@ -34,42 +33,55 @@ router.get('/:memberId/documents', async (req, res) => {
 });
 
 // Subir documento
-router.post('/:memberId/upload', upload.single('document'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
-    }
+router.post('/:memberId/upload', (req, res) => {
+    upload(req, res, async function(err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({ error: `Error en la subida: ${err.message}` });
+        } else if (err) {
+            return res.status(500).json({ error: 'Error al procesar el archivo' });
+        }
 
-    const connection = await pool.getConnection();
-    try {
-        await connection.beginTransaction();
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se ha proporcionado ningún archivo' });
+        }
 
-        const { memberId } = req.params;
-        const documentName = req.file.originalname;
-        const documentType = req.file.mimetype;
-        const documentData = req.file.buffer;
+        let connection;
+        try {
+            connection = await pool.getConnection();
+            await connection.beginTransaction();
 
-        const [result] = await connection.query(
-            'INSERT INTO member_documents (member_id, document_name, document_type, document_data) VALUES (?, ?, ?, ?)',
-            [memberId, documentName, documentType, documentData]
-        );
+            const [result] = await connection.query(
+                'INSERT INTO member_documents (member_id, document_name, document_type, document_data, file_size) VALUES (?, ?, ?, ?, ?)',
+                [
+                    req.params.memberId,
+                    req.file.originalname,
+                    req.file.mimetype,
+                    req.file.buffer,
+                    req.file.size
+                ]
+            );
 
-        await connection.commit();
+            await connection.commit();
 
-        res.status(201).json({
-            id: result.insertId,
-            document_name: documentName,
-            document_type: documentType,
-            upload_date: new Date()
-        });
-    } catch (error) {
-        await connection.rollback();
-        console.error('Error al subir documento:', error);
-        res.status(500).json({ error: 'Error al subir documento' });
-    } finally {
-        connection.release();
-    }
+            res.status(201).json({
+                message: 'Documento subido exitosamente',
+                file: {
+                    id: result.insertId,
+                    document_name: req.file.originalname,
+                    document_type: req.file.mimetype,
+                    file_size: req.file.size,
+                    upload_date: new Date()
+                }
+            });
+        } catch (error) {
+            if (connection) await connection.rollback();
+            console.error('Error al subir documento:', error);
+            res.status(500).json({ error: 'Error al guardar el documento' });
+        } finally {
+            if (connection) connection.release();
+        }
+    });
 });
-
 // Descargar documento
 router.get('/download/:id', async (req, res) => {
     try {
@@ -84,7 +96,7 @@ router.get('/download/:id', async (req, res) => {
 
         const document = rows[0];
         res.setHeader('Content-Type', document.document_type);
-        res.setHeader('Content-Disposition', `attachment; filename="${document.document_name}"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.document_name)}"`);
         res.send(document.document_data);
     } catch (error) {
         console.error('Error al descargar documento:', error);
@@ -94,27 +106,39 @@ router.get('/download/:id', async (req, res) => {
 
 // Eliminar documento
 router.delete('/:id', async (req, res) => {
-    const connection = await pool.getConnection();
+    let connection;
     try {
+        connection = await pool.getConnection();
         await connection.beginTransaction();
-        
-        const [result] = await connection.query(
+
+        const [document] = await connection.query(
+            'SELECT id, document_name FROM member_documents WHERE id = ?',
+            [req.params.id]
+        );
+
+        if (document.length === 0) {
+            return res.status(404).json({ error: 'Documento no encontrado' });
+        }
+
+        await connection.query(
             'DELETE FROM member_documents WHERE id = ?',
             [req.params.id]
         );
 
-        if (result.affectedRows === 0) {
-            throw new Error('Documento no encontrado');
-        }
-
         await connection.commit();
-        res.json({ message: 'Documento eliminado exitosamente' });
+        res.json({ 
+            message: 'Documento eliminado exitosamente',
+            deletedDocument: {
+                id: req.params.id,
+                name: document[0].document_name
+            }
+        });
     } catch (error) {
-        await connection.rollback();
+        if (connection) await connection.rollback();
         console.error('Error al eliminar documento:', error);
         res.status(500).json({ error: 'Error al eliminar documento' });
     } finally {
-        connection.release();
+        if (connection) connection.release();
     }
 });
 

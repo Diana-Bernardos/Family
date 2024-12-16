@@ -1,6 +1,6 @@
-// src/components/MemberDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Home } from 'lucide-react';
 import { api } from '../services/api';
 import DocumentPreview from './DocumentPreview';
 
@@ -49,30 +49,60 @@ const MemberDetail = () => {
     };
 
     const handleFileUpload = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        if (file.size > 10 * 1024 * 1024) {
-            alert('El archivo no puede ser mayor a 10MB');
-            return;
-        }
-
         try {
+            const file = event.target.files[0];
+            if (!file) {
+                setError('Por favor selecciona un archivo');
+                return;
+            }
+    
+            console.log('Archivo seleccionado:', file);
+    
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'image/jpeg',
+                'image/png',
+                'image/gif'
+            ];
+    
+            if (!allowedTypes.includes(file.type)) {
+                setError('Tipo de archivo no permitido');
+                return;
+            }
+    
+            if (file.size > 15 * 1024 * 1024) {
+                setError('El archivo no puede ser mayor a 15MB');
+                return;
+            }
+    
             setUploading(true);
-            await api.uploadDocument(id, file);
-            const updatedDocs = await api.getMemberDocuments(id);
-            setDocuments(updatedDocs);
+            setError(null);
+    
+            try {
+                await api.uploadDocument(id, file);
+                await loadAllData();
+                event.target.value = '';
+                setError(null);
+            } catch (error) {
+                console.error('Error al subir documento:', error);
+                setError(error.message || 'Error al subir el documento');
+            } finally {
+                setUploading(false);
+            }
         } catch (error) {
-            setError('Error al subir el documento');
-            console.error('Error:', error);
-        } finally {
+            console.error('Error en handleFileUpload:', error);
+            setError('Error inesperado al procesar el archivo');
             setUploading(false);
-            event.target.value = ''; // Limpiar input
         }
     };
 
     const handleDownload = async (documentId, fileName) => {
         try {
+            setError(null);
             const blob = await api.downloadDocument(documentId);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -91,6 +121,7 @@ const MemberDetail = () => {
     const handleDeleteDocument = async (documentId) => {
         if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
             try {
+                setError(null);
                 await api.deleteDocument(documentId);
                 setDocuments(documents.filter(doc => doc.id !== documentId));
             } catch (error) {
@@ -101,7 +132,6 @@ const MemberDetail = () => {
     };
 
     if (loading) return <div className="loading">Cargando...</div>;
-    if (error) return <div className="error-message">{error}</div>;
     if (!member) return <div className="error-message">Miembro no encontrado</div>;
 
     const avatarUrl = member.avatar ? 
@@ -110,6 +140,8 @@ const MemberDetail = () => {
 
     return (
         <div className="member-detail">
+            {error && <div className="error-message">{error}</div>}
+            
             <div className="member-header">
                 <h2>Perfil del Miembro</h2>
             </div>
@@ -147,8 +179,9 @@ const MemberDetail = () => {
                     <button 
                         onClick={() => navigate('/members')}
                         className="btn btn-secondary"
+                        title="Volver"
                     >
-                        ← Volver
+                        <Home size={20} />
                     </button>
                 </div>
             </div>
@@ -158,7 +191,7 @@ const MemberDetail = () => {
                 <div className="document-upload">
                     <input
                         type="file"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
                         onChange={handleFileUpload}
                         disabled={uploading}
                         style={{ display: 'none' }}

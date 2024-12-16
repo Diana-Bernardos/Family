@@ -91,10 +91,7 @@ export const api = {
     getMemberEvents: async (id) => {
         try {
             const response = await fetch(`${API_URL}/members/${id}/events`);
-            if (!response.ok) {
-                console.log('Respuesta del servidor:', await response.text());
-                throw new Error('Error al obtener eventos del miembro');
-            }
+            if (!response.ok) throw new Error('Error al obtener eventos del miembro');
             return await response.json();
         } catch (error) {
             console.error('Error detallado:', error);
@@ -142,61 +139,66 @@ export const api = {
             throw error;
         }
     },
-  
 
-    uploadDocument: async (memberId, documentFile) => {
+    // Documentos
+    uploadDocument: async (memberId, file) => {
         try {
-          const formData = new FormData();
-          formData.append('document', documentFile);
-      
-          const response = await fetch(`${API_URL}/documents/${memberId}/upload`, {
-            method: 'POST',
-            body: formData
-          });
-          
-          if (!response.ok) throw new Error('Error al subir documento');
-          return await response.json();
-        } catch (error) {
-          console.error('Error:', error);
-          throw error;
-        }
-      },
+            const formData = new FormData();
+            formData.append('document', file);
 
-      getMemberDocuments: async (memberId) => {
+            const response = await fetch(`${API_URL}/documents/${memberId}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al subir documento');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error en uploadDocument:', error);
+            throw error;
+        }
+    },
+
+    getMemberDocuments: async (memberId) => {
         try {
-          const response = await fetch(`${API_URL}/documents/${memberId}/documents`);
-          if (!response.ok) throw new Error('Error al obtener documentos');
-          return await response.json();
+            const response = await fetch(`${API_URL}/documents/${memberId}/documents`);
+            if (!response.ok) throw new Error('Error al obtener documentos');
+            return await response.json();
         } catch (error) {
-          console.error('Error:', error);
-          throw error;
+            console.error('Error en getMemberDocuments:', error);
+            throw error;
         }
-      },
-downloadDocument: async (documentId) => {
-    try {
-        const response = await fetch(`${API_URL}/documents/download/${documentId}`);
-        if (!response.ok) throw new Error('Error al descargar documento');
-        return await response.blob();
-    } catch (error) {
-        console.error('Error:', error);
-        throw error;
-    }
-},
+    },
 
 
-deleteDocument: async (documentId) => {
-    try {
-        const response = await fetch(`${API_URL}/documents/${documentId}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Error al eliminar documento');
-        return await response.json();
-    } catch (error) {
-        console.error('Error:', error);
-        throw error;
-    }
-}};
+    downloadDocument: async (documentId) => {
+        try {
+            const response = await fetch(`${API_URL}/documents/download/${documentId}`);
+            if (!response.ok) {
+                throw new Error('Error al descargar documento');
+            }
+            return await response.blob();
+        } catch (error) {
+            console.error('Error en downloadDocument:', error);
+            throw error;
+        }
+    },
 
-  
-
-    
+    deleteDocument: async (documentId) => {
+        try {
+            const response = await fetch(`${API_URL}/documents/${documentId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new Error('Error al eliminar documento');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error en deleteDocument:', error);
+            throw error;
+        }
+    }}

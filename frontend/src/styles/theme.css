@@ -30,39 +30,101 @@ body {
 
 /* Modo oscuro */
 [data-theme='dark'] {
-    --bg-primary: #5a7598;
-    --bg-secondary: #acb6c5;
-    --bg-accent: #788aa4;
-    --bg-light: #111827;
-    --bg-gradient: linear-gradient(135deg, #1F2937 0%, #374151 50%, #4B5563 100%);
+    /* Nuevos colores base modo oscuro */
+    --dark-bg: #121212;
+    --dark-surface: #1E1E1E;
+    --pink-accent: #FF69B4;  /* Rosa fuerte */
+    --pink-light: #FFB6C1;   /* Rosa claro */
+    
+    /* Aplicación de colores */
+    --bg-primary: var(--dark-bg);
+    --bg-secondary: var(--dark-surface);
+    --bg-accent: var(--pink-accent);
+    --bg-light: var(--dark-surface);
+    
+    --text-primary: #FFFFFF;
+    --text-secondary: #E5E7EB;
+    --text-light: var(--pink-light);
+    
+    --border-color: #2D2D2D;
+    
+    /* Sombras para modo oscuro */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Contenedor principal */
-.main-content {
-    background: transparent;
-    min-height: calc(100vh - 64px); /* Altura del navegador */
-    padding: 20px;
+/* Ajustes específicos para componentes en modo oscuro */
+[data-theme='dark'] .btn-primary {
+    background-color: var(--pink-accent);
+    border-color: var(--pink-accent);
+    color: var(--dark-bg);
 }
 
-/* Ajustar cards para mejor contraste */
-.card, 
-.member-card, 
-.event-card {
-    background: var(--bg-primary);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+[data-theme='dark'] .btn-primary:hover {
+    background-color: transparent;
+    color: var(--pink-accent);
 }
 
-/* Navegación */
-.main-navigation {
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-color);
+[data-theme='dark'] .card {
+    background-color: var(--dark-surface);
+    border-color: var(--pink-accent);
 }
 
-/* Calendario */
-.calendar-container {
-    background: var(--bg-primary);
-    margin: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
+[data-theme='dark'] .nav-link.active {
+    background-color: var(--pink-accent);
+    color: var(--dark-bg);
+}
+
+[data-theme='dark'] .member-card:hover {
+    border-color: var(--pink-accent);
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
+}
+
+[data-theme='dark'] .calendar-container {
+    background-color: var(--dark-surface);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .fc-button-primary {
+    background-color: var(--pink-accent) !important;
+    border-color: var(--pink-accent) !important;
+    color: var(--dark-bg) !important;
+}
+
+[data-theme='dark'] .fc-button-primary:hover {
+    background-color: transparent !important;
+    color: var(--pink-accent) !important;
+}
+
+[data-theme='dark'] .fc-day {
+    background-color: var(--dark-surface) !important;
+}
+
+[data-theme='dark'] .fc-day-today {
+    background-color: rgba(255, 105, 180, 0.1) !important;
+}
+
+[data-theme='dark'] .document-item {
+    background-color: var(--dark-surface);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .document-item:hover {
+    border-color: var(--pink-accent);
+}
+
+[data-theme='dark'] .member-avatar-container {
+    border-color: var(--pink-accent);
+}
+
+[data-theme='dark'] .form-control {
+    background-color: var(--dark-surface);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme='dark'] .form-control:focus {
+    border-color: var(--pink-accent);
+    box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.2);
 }

@@ -1,33 +1,34 @@
-// src/components/Navigation.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Logo from './Logo';
+import { Home } from 'lucide-react';
 
 const Navigation = () => {
     const location = useLocation();
 
     return (
-        
         <nav className="main-navigation">
             <div className="nav-logo">
             </div>
-        <div className="nav-container">
-            <Link to="/" className="nav-brand">
-                <img 
-                    src={process.env.PUBLIC_URL + "/static/media/family-logo.481e22f25cac2029f077.png"} 
-                    alt="" 
-                    className="nav-logo" 
-                    style={{ width: '40px', height: '40px' }}
-                />
-                <span className="nav-title">FAMILY</span>
-            </Link>
+            <div className="nav-container">
+                <Link to="/" className="nav-brand">
+                    <img 
+                        src={process.env.PUBLIC_URL + "/static/media/family-logo.481e22f25cac2029f077.png"} 
+                        alt="" 
+                        className="nav-logo" 
+                        style={{ width: '40px', height: '40px' }}
+                    />
+                    <span className="nav-title">FAMILY</span>
+                </Link>
                 
                 <div className="nav-links">
                     <Link 
                         to="/" 
                         className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
                     >
-                        Calendario
+                        <div className="flex items-center">
+                            <Home size={20} className="mr-2" />
+                            <span>Calendario</span>
+                        </div>
                     </Link>
                     
                     <Link 
