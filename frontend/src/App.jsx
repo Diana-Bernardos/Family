@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './components/Login';
+import Register from './components/Register';
+import PrivateRoute from './components/PrivateRoute';
 import Navigation from './components/Navigation';
 import Calendar from './components/Calendar';
 import EventForm from './components/EventForm';
@@ -29,37 +33,44 @@ function App() {
     };
 
     return (
-        <>
+        <AuthProvider>
             {showSplash ? (
                 <SplashScreen onFinish={handleSplashFinish} />
             ) : (
                 <Router>
                     <div className="app-container">
-            
+                        <Routes>
+                            {/* Rutas públicas */}
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
 
-                        {/* Navegación */}
-                        <Navigation />
-
-                        {/* Contenido principal */}
-                        <main className="main-content">
-                            <Routes>
-                                <Route path="/" element={<Calendar />} />
-                                <Route path="/new-event" element={<EventForm />} />
-                                <Route path="/event/:id" element={<EventDetail />} />
-                                <Route path="/edit-event/:id" element={<EditEventForm />} />
-                                <Route path="/members" element={<MemberList />} />
-                                <Route path="/new-member" element={<MemberForm />} />
-                                <Route path="/member/:id" element={<MemberDetail />} />
-                                <Route path="/edit-member/:id" element={<EditMemberForm />} />
-                            </Routes>
-                        </main>
-
-                        {/* Botón para alternar tema */}
-                        <ThemeToggle />
+                            {/* Rutas protegidas */}
+                            <Route path="/*" element={
+                                <PrivateRoute>
+                                    <div className="authenticated-container">
+                                        <Navigation />
+                                        <main className="main-content">
+                                            <Routes>
+                                                <Route path="/" element={<Calendar />} />
+                                                <Route path="/new-event" element={<EventForm />} />
+                                                <Route path="/event/:id" element={<EventDetail />} />
+                                                <Route path="/edit-event/:id" element={<EditEventForm />} />
+                                                <Route path="/members" element={<MemberList />} />
+                                                <Route path="/new-member" element={<MemberForm />} />
+                                                <Route path="/member/:id" element={<MemberDetail />} />
+                                                <Route path="/edit-member/:id" element={<EditMemberForm />} />
+                                                <Route path="*" element={<Navigate to="/" replace />} />
+                                            </Routes>
+                                        </main>
+                                        <ThemeToggle />
+                                    </div>
+                                </PrivateRoute>
+                            } />
+                        </Routes>
                     </div>
                 </Router>
             )}
-        </>
+        </AuthProvider>
     );
 }
 

@@ -26,7 +26,7 @@ const Navigation = () => {
                         className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
                     >
                         <div className="flex items-center">
-                            <Home size={20} className="mr-2" />
+                            
                             <span>Calendario</span>
                         </div>
                     </Link>

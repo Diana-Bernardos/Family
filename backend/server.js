@@ -26,6 +26,7 @@ app.use('/uploads', express.static('uploads'));
 const membersRouter = require('./routes/members');
 const eventsRouter = require('./routes/events');
 const documentsRouter = require('./routes/documents');
+const authRoutes = require('./routes/auth');
 
 // Crear directorios necesarios
 const dirs = ['uploads', 'uploads/avatars', 'uploads/documents'];
@@ -40,6 +41,8 @@ dirs.forEach(dir => {
 app.use('/api/members', membersRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/documents', documentsRouter);
+app.use('/api/auth', authRoutes);
+
 
 // Manejo de errores
 app.use((err, req, res, next) => {
@@ -57,6 +60,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
+module.exports = server; 

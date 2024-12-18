@@ -112,15 +112,16 @@
 }
 
 .btn-primary {
-    background-color: var(--navy);
-    color: white;
+    background-color:cadetblue;
+    color:antiquewhite;
     border-color: var(--navy);
 
 }
 
 .btn-primary:hover {
-    background-color: transparent;
-    color: var(--navy);
+    background-color:cadetblue;
+    color:antiquewhite;
+  
     box-shadow: var(--btn-hover-shadow);
     transform: translateY(-1px);
 }
@@ -145,7 +146,7 @@
 }
 
 .btn-danger:hover {
-    background-color: transparent;
+    
     color: var(--danger);
     box-shadow: var(--btn-hover-shadow);
     transform: translateY(-1px);

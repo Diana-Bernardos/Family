@@ -101,7 +101,7 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1.5rem;
 }
 
 .member-actions .btn {
@@ -114,7 +114,7 @@
 
 .button-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 1.5rem;
 }
 
 .button-group .btn {

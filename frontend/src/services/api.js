@@ -201,4 +201,74 @@ export const api = {
             console.error('Error en deleteDocument:', error);
             throw error;
         }
-    }}
+    },
+
+
+    // METODOS AUTENTICACION
+
+    login: async (email, password) => {
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error en login:', error);
+            throw error;
+        }
+    },
+
+    register: async (username, email, password) => {
+        try {
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error en registro:', error);
+            throw error;
+        }
+    },
+
+    // Función auxiliar para hacer peticiones autenticadas
+    authenticatedRequest: async (url, options = {}) => {
+        const token = localStorage.getItem('token');
+        
+        const headers = {
+            ...options.headers,
+            'Authorization': `Bearer ${token}`
+        };
+
+        const response = await fetch(url, {
+            ...options,
+            headers
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error);
+        }
+
+        return response.json();
+    }
+}
