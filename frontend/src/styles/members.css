@@ -1,10 +1,12 @@
 /* src/styles/members.css */
+@import 'theme.css';
 
 /* === Lista de Miembros === */
 .member-list {
     padding: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
+    background-color: transparent;
 }
 
 .member-list-header {
@@ -20,6 +22,7 @@
     color: var(--navy);
     font-size: 1.5rem;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 /* === Grid de Miembros === */
@@ -41,11 +44,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-shadow: var(--shadow-sm);
 }
 
 .member-card:hover {
     transform: translateY(-4px);
-    border-color: var(--navy);
+    border-color: var(--primary);
     box-shadow: var(--shadow-md);
 }
 
@@ -55,12 +59,13 @@
     border-radius: 50%;
     overflow: hidden;
     margin-bottom: 1rem;
-    border: 3px solid var(--mint);
-    transition: border-color 0.3s ease;
+    border: 3px solid var(--accent);
+    transition: all 0.3s ease;
 }
 
 .member-card:hover .member-avatar-container {
-    border-color: var(--navy);
+    border-color: var(--primary);
+    transform: scale(1.05);
 }
 
 .member-avatar {
@@ -76,10 +81,11 @@
 }
 
 .member-info h3 {
-    color: var(--navy);
+    color: var(--text-primary);
     font-size: 1.1rem;
     margin: 0 0 0.5rem 0;
     font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 .member-email {
@@ -98,27 +104,29 @@
 .member-actions {
     width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .member-actions .btn {
-    width:65%;
+    width: 65%;
     justify-content: center;
-    
-  
-    
+    margin: 0.5rem 0;
 }
 
 .button-group {
     display: flex;
-    gap: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
 }
 
 .button-group .btn {
     flex: 1;
+    min-width: 120px;
 }
 
 /* === Documentos === */
@@ -137,12 +145,13 @@
     border: 1px solid var(--border-color);
     margin-bottom: 0.5rem;
     transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .document-item:hover {
     transform: translateX(4px);
-    border-color: var(--navy);
-    box-shadow: var(--shadow-sm);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-md);
 }
 
 .document-info {
@@ -173,6 +182,7 @@
     background: var(--bg-secondary);
     border-radius: var(--border-radius);
     color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
 }
 
 .loading-container {
@@ -180,6 +190,8 @@
     justify-content: center;
     align-items: center;
     min-height: 200px;
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
 }
 
 /* === Media Queries === */
@@ -200,8 +212,8 @@
     }
 
     .member-avatar-container {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
     }
 
     .document-item {
@@ -214,11 +226,20 @@
         width: 100%;
         justify-content: center;
     }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .button-group .btn {
+        width: 100%;
+    }
 }
 
 /* === Modo Oscuro === */
 [data-theme='dark'] .member-card {
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
 }
 
 [data-theme='dark'] .member-info h3 {
@@ -226,5 +247,10 @@
 }
 
 [data-theme='dark'] .document-item {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] .no-members {
     background: var(--bg-primary);
 }

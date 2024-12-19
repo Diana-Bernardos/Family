@@ -15,6 +15,8 @@ import MemberDetail from './components/MemberDetail';
 import EditMemberForm from './components/EditMemberForm';
 import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
+import EnhancedChatBot from './components/EnhancedChatBot';
+import FamilyAssistant from './components/FamilyAssistant';
 
 // Importación del logo
 import logo from './assets/images/family-logo.png';
@@ -34,6 +36,8 @@ function App() {
 
     return (
         <AuthProvider>
+            <EnhancedChatBot />
+            <FamilyAssistant />
             {showSplash ? (
                 <SplashScreen onFinish={handleSplashFinish} />
             ) : (

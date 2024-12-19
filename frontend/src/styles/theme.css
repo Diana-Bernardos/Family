@@ -1,4 +1,4 @@
-/* En src/styles/theme.css */
+/* src/styles/theme.css */
 :root {
     /* Paleta de colores del logo */
     --peach: #FFE4D6;
@@ -10,121 +10,91 @@
     --primary: var(--navy);
     --secondary: var(--peach);
     --accent: var(--mint);
-    
-    /* Fondos actualizados */
+    --danger: #dc3545;
+
+    /* Mejoras en colores de texto */
+    --text-primary: #1F2937;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+
+    /* Fondos */
     --bg-primary: #FFFFFF;
     --bg-secondary: var(--peach);
     --bg-accent: var(--mint);
     --bg-light: var(--sky);
-    
-    /* Color de fondo general */
+
+    /* Gradiente de fondo */
     --bg-gradient: linear-gradient(135deg, var(--sky) 0%, var(--mint) 50%, var(--peach) 100%);
+
+    /* Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+
+    /* Espaciados */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+
+    /* Border radius */
+    --border-radius: 10px;
 }
 
-/* Ajustar el fondo del body */
 body {
     background: var(--bg-gradient);
     min-height: 100vh;
     color: var(--text-primary);
+    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--navy);
+    margin-bottom: 0.5rem;
 }
 
 /* Modo oscuro */
 [data-theme='dark'] {
-    /* Nuevos colores base modo oscuro */
+    /* Colores base modo oscuro */
     --dark-bg: #121212;
     --dark-surface: #1E1E1E;
-    --pink-accent: #FF69B4;  /* Rosa fuerte */
-    --pink-light: #FFB6C1;   /* Rosa claro */
-    
+    --pink-accent: #FF69B4;
+    --pink-light: #FFB6C1;
+
     /* Aplicación de colores */
     --bg-primary: var(--dark-bg);
     --bg-secondary: var(--dark-surface);
     --bg-accent: var(--pink-accent);
     --bg-light: var(--dark-surface);
-    
-    --text-primary: #FFFFFF;
-    --text-secondary: #E5E7EB;
-    --text-light: var(--pink-light);
-    
+
+    /* Colores de texto modo oscuro */
+    --text-primary: #E5E7EB;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+
     --border-color: #2D2D2D;
-    
-    /* Sombras para modo oscuro */
+
+    /* Sombras modo oscuro */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #1E1E1E 0%, #121212 50%, #1E1E1E 100%);
 }
 
-/* Ajustes específicos para componentes en modo oscuro */
-[data-theme='dark'] .btn-primary {
-    background-color: var(--pink-accent);
-    border-color: var(--pink-accent);
-    color: var(--dark-bg);
-}
-
-[data-theme='dark'] .btn-primary:hover {
-    background-color: transparent;
-    color: var(--pink-accent);
-}
-
-[data-theme='dark'] .card {
-    background-color: var(--dark-surface);
-    border-color: var(--pink-accent);
+/* Ajustes de tema oscuro */
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3,
+[data-theme='dark'] h4,
+[data-theme='dark'] h5,
+[data-theme='dark'] h6 {
+    color: var(--text-primary);
 }
 
 [data-theme='dark'] .nav-link.active {
     background-color: var(--pink-accent);
     color: var(--dark-bg);
-}
-
-[data-theme='dark'] .member-card:hover {
-    border-color: var(--pink-accent);
-    box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
-}
-
-[data-theme='dark'] .calendar-container {
-    background-color: var(--dark-surface);
-    border-color: var(--border-color);
-}
-
-[data-theme='dark'] .fc-button-primary {
-    background-color: var(--pink-accent) !important;
-    border-color: var(--pink-accent) !important;
-    color: var(--dark-bg) !important;
-}
-
-[data-theme='dark'] .fc-button-primary:hover {
-    background-color: transparent !important;
-    color: var(--pink-accent) !important;
-}
-
-[data-theme='dark'] .fc-day {
-    background-color: var(--dark-surface) !important;
-}
-
-[data-theme='dark'] .fc-day-today {
-    background-color: rgba(255, 105, 180, 0.1) !important;
-}
-
-[data-theme='dark'] .document-item {
-    background-color: var(--dark-surface);
-    border-color: var(--border-color);
-}
-
-[data-theme='dark'] .document-item:hover {
-    border-color: var(--pink-accent);
-}
-
-[data-theme='dark'] .member-avatar-container {
-    border-color: var(--pink-accent);
-}
-
-[data-theme='dark'] .form-control {
-    background-color: var(--dark-surface);
-    border-color: var(--border-color);
-    color: var(--text-primary);
-}
-
-[data-theme='dark'] .form-control:focus {
-    border-color: var(--pink-accent);
-    box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.2);
 }

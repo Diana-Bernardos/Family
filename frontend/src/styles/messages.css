@@ -1,0 +1,76 @@
+/* Estilos para diferentes tipos de mensajes */
+.message-event {
+    border-left: 4px solid #22c55e;
+    background-color: #f0fdf4;
+}
+
+.message-document {
+    border-left: 4px solid #eab308;
+    background-color: #fefce8;
+}
+
+.message-task {
+    border-left: 4px solid #3b82f6;
+    background-color: #eff6ff;
+}
+
+.message-recommendation {
+    border-left: 4px solid #ec4899;
+    background-color: #fdf2f8;
+}
+
+/* Estilos para elementos interactivos dentro de los mensajes */
+.interactive-element {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.event-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.event-icon {
+    width: 24px;
+    height: 24px;
+    color: #22c55e;
+}
+
+.document-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.document-icon {
+    width: 24px;
+    height: 24px;
+    color: #eab308;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.task-checkbox {
+    width: 16px;
+    height: 16px;
+}

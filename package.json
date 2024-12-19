@@ -13,10 +13,11 @@
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.468.0",
     "react-scripts": "^5.0.1"
   },
-
   "jest": {
     "testEnvironment": "node"
   }
