@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Calendar, Bell, Loader, X } from 'lucide-react';
+import { MessageCircle, Calendar, Bell, Loader } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CalendarAIService from '../services/CalendarAiService';
 
-const EnhancedChatBot = () => {
+const CalendarChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -12,14 +12,6 @@ const EnhancedChatBot = () => {
     const messagesEndRef = useRef(null);
     const { user } = useAuth();
 
-    const quickSuggestions = [
-        "¿Qué eventos tengo próximamente?",
-        "Recordar documentos por vencer",
-        "Sugerir actividades familiares",
-        "Crear recordatorio"
-    ];
-
-    // Auto-scroll a los nuevos mensajes
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -28,26 +20,23 @@ const EnhancedChatBot = () => {
         scrollToBottom();
     }, [messages]);
 
-    // Mensaje de bienvenida al abrir el chat
+    // Mensaje de bienvenida cuando se abre el chat
     useEffect(() => {
         if (isOpen && messages.length === 0) {
-            setMessages([
-                {
-                    type: 'bot',
-                    text: '👋 ¡Hola! Soy tu asistente familiar. Puedo ayudarte con:\n• Recordatorios de eventos\n• Búsqueda de fechas importantes\n• Sugerencias para actividades familiares\n• Gestión de documentos'
-                }
-            ]);
+            setMessages([{
+                type: 'bot',
+                text: '¡Hola! Soy tu asistente del calendario familiar. Puedo ayudarte con:\n- Recordatorios de eventos\n- Búsqueda de fechas importantes\n- Sugerencias para actividades familiares'
+            }]);
         }
     }, [isOpen]);
 
-    // Función para enviar mensaje al asistente
     const handleSend = async () => {
         if (!input.trim() || !user) return;
 
         const userMessage = input;
         setInput('');
         setError(null);
-
+        
         // Agregar mensaje del usuario
         setMessages(prev => [...prev, { 
             type: 'user', 
@@ -57,25 +46,55 @@ const EnhancedChatBot = () => {
         setIsTyping(true);
 
         try {
-            // Simular respuesta del asistente (aquí irá la integración con Ollama)
-            setTimeout(() => {
-                setMessages(prev => [...prev, { 
-                    type: 'bot', 
-                    text: '¡Entiendo! Déjame ayudarte con eso...' 
+            const response = await CalendarAIService.processCalendarQuery(userMessage, user.id);
+            
+            // Mostrar la respuesta principal
+            setMessages(prev => [...prev, {
+                type: 'bot',
+                text: response.message,
+                actions: response.actions || []
+            }]);
+
+            // Si hay acciones sugeridas, mostrarlas
+            if (response.actions?.length > 0) {
+                response.actions.forEach(action => {
+                    if (action.type === 'reminder') {
+                        setMessages(prev => [...prev, {
+                            type: 'reminder',
+                            text: action.details.title,
+                            details: action.details
+                        }]);
+                    }
+                });
+            }
+
+            // Si hay eventos relacionados, mostrarlos
+            if (response.relatedEvents?.length > 0) {
+                setMessages(prev => [...prev, {
+                    type: 'events',
+                    events: response.relatedEvents
                 }]);
-                setIsTyping(false);
-            }, 1000);
+            }
 
         } catch (error) {
             console.error('Error:', error);
             setError('Lo siento, ha ocurrido un error al procesar tu mensaje.');
+        } finally {
             setIsTyping(false);
         }
     };
 
-    // Manejar sugerencias rápidas
-    const handleSuggestion = (suggestion) => {
-        setInput(suggestion);
+    const handleReminderAction = async (reminderDetails) => {
+        try {
+            await CalendarAIService.createReminder(reminderDetails);
+            setMessages(prev => [...prev, {
+                type: 'bot',
+                text: '✅ Recordatorio creado exitosamente.'
+            }]);
+        } catch (error) {
+            console.error('Error creating reminder:', error);
+            setError('No se pudo crear el recordatorio');
+        }
     };
 
     const renderMessage = (message, index) => {
@@ -91,16 +110,44 @@ const EnhancedChatBot = () => {
             case 'bot':
                 return (
                     <div key={index} className="flex justify-start mb-3">
-                        <div className="bg-gray-100 rounded-lg py-2 px-4 max-w-[75%] whitespace-pre-line">
+                        <div className="bg-gray-100 rounded-lg py-2 px-4 max-w-[75%]">
                             {message.text}
                         </div>
                     </div>
                 );
-            case 'error':
+            case 'reminder':
                 return (
-                    <div key={index} className="flex justify-center mb-3">
-                        <div className="bg-red-100 text-red-600 rounded-lg py-2 px-4 text-sm">
-                            {message.text}
+                    <div key={index} className="flex justify-start mb-3">
+                        <div className="bg-blue-50 rounded-lg py-2 px-4 max-w-[75%]">
+                            <div className="flex items-center gap-2">
+                                <Bell className="w-4 h-4 text-blue-500" />
+                                <span>{message.text}</span>
+                            </div>
+                            <button 
+                                onClick={() => handleReminderAction(message.details)}
+                                className="mt-2 text-blue-500 text-sm hover:underline"
+                            >
+                                Crear recordatorio
+                            </button>
+                        </div>
+                    </div>
+                );
+            case 'events':
+                return (
+                    <div key={index} className="flex justify-start mb-3">
+                        <div className="bg-green-50 rounded-lg py-2 px-4 max-w-[75%]">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Calendar className="w-4 h-4 text-green-500" />
+                                <span className="font-medium">Eventos relacionados:</span>
+                            </div>
+                            {message.events.map((event, i) => (
+                                <div key={i} className="mb-2 last:mb-0">
+                                    <div className="font-medium">{event.title}</div>
+                                    <div className="text-sm text-gray-600">
+                                        {new Date(event.event_date).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
@@ -114,8 +161,8 @@ const EnhancedChatBot = () => {
             {!isOpen ? (
                 <button 
                     onClick={() => setIsOpen(true)}
-                    className="bg-blue-500 p-3 rounded-full text-white shadow-lg hover:bg-blue-600 transition-colors"
-                    title="Asistente Familiar"
+                    className="bg-blue-500 p-3 rounded-full text-white shadow-lg hover:bg-blue-600 transition-all"
+                    title="Asistente del Calendario"
                 >
                     <MessageCircle className="w-6 h-6" />
                 </button>
@@ -123,32 +170,16 @@ const EnhancedChatBot = () => {
                 <div className="bg-white rounded-lg shadow-xl w-96 h-[32rem] flex flex-col">
                     {/* Header */}
                     <div className="p-4 bg-blue-500 text-white rounded-t-lg flex justify-between items-center">
-                        <h3 className="font-semibold flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5" />
-                            Asistente Familiar
-                        </h3>
+                        <h3 className="font-semibold">Asistente del Calendario</h3>
                         <button 
                             onClick={() => setIsOpen(false)}
-                            className="hover:bg-blue-600 p-1 rounded transition-colors"
+                            className="hover:bg-blue-600 p-1 rounded"
                         >
-                            <X className="w-5 h-5" />
+                            ×
                         </button>
                     </div>
 
-                    {/* Sugerencias rápidas */}
-                    <div className="p-2 bg-gray-50 grid grid-cols-2 gap-2">
-                        {quickSuggestions.map((suggestion, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleSuggestion(suggestion)}
-                                className="text-xs bg-white p-2 rounded border hover:bg-gray-50 text-left transition-colors"
-                            >
-                                {suggestion}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Área de mensajes */}
+                    {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-4">
                         {messages.map((message, index) => renderMessage(message, index))}
                         {isTyping && (
@@ -166,7 +197,7 @@ const EnhancedChatBot = () => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Área de entrada */}
+                    {/* Input */}
                     <div className="p-4 border-t">
                         <div className="flex gap-2">
                             <input
@@ -192,4 +223,4 @@ const EnhancedChatBot = () => {
     );
 };
 
-export default EnhancedChatBot;
+export default CalendarChatBot;

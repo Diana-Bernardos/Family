@@ -8,6 +8,13 @@ const EventDetail = () => {
     const [error, setError] = useState(null);
     const { id } = useParams();
     const navigate = useNavigate();
+    const [aiSuggestions, setAiSuggestions] = useState([]);
+    const [relatedEvents, setRelatedEvents] = useState([]);
+
+    const getEventSuggestions = async () => {
+        const suggestions = await SmartAssistantService.getEventRecommendations(event.id);
+        setAiSuggestions(suggestions);
+    };
 
     useEffect(() => {
         loadEvent();

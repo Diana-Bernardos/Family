@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import { api } from '../services/api';
 import DocumentPreview from './DocumentPreview';
+import SmartAssistantButton from './SmartAsistantButton';
 
 const MemberDetail = () => {
     const [member, setMember] = useState(null);
@@ -140,11 +141,18 @@ const MemberDetail = () => {
 
     return (
         <div className="member-detail">
+            <div className="absolute top-4 right-4">
+                <SmartAssistantButton 
+                    type="member"
+                    tooltip="Gestionar eventos del miembro"
+                />
+            </div>
             {error && <div className="error-message">{error}</div>}
             
             <div className="member-header">
                 <h2>Perfil del Miembro</h2>
             </div>
+
 
             <div className="member-info">
                 <div className="member-avatar-container">

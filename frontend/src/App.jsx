@@ -17,6 +17,8 @@ import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
 import EnhancedChatBot from './components/EnhancedChatBot';
 import FamilyAssistant from './components/FamilyAssistant';
+import SmartAssistantChat from './components/SmartAssistantChat';
+import CalendarChatBot from './components/CalendarChatBot';
 
 // Importación del logo
 import logo from './assets/images/family-logo.png';
@@ -38,6 +40,8 @@ function App() {
         <AuthProvider>
             <EnhancedChatBot />
             <FamilyAssistant />
+            <CalendarChatBot />
+            
             {showSplash ? (
                 <SplashScreen onFinish={handleSplashFinish} />
             ) : (
@@ -56,6 +60,7 @@ function App() {
                                         <main className="main-content">
                                             <Routes>
                                                 <Route path="/" element={<Calendar />} />
+                                                
                                                 <Route path="/new-event" element={<EventForm />} />
                                                 <Route path="/event/:id" element={<EventDetail />} />
                                                 <Route path="/edit-event/:id" element={<EditEventForm />} />
@@ -65,6 +70,7 @@ function App() {
                                                 <Route path="/edit-member/:id" element={<EditMemberForm />} />
                                                 <Route path="*" element={<Navigate to="/" replace />} />
                                             </Routes>
+                                            <SmartAssistantChat />
                                         </main>
                                         <ThemeToggle />
                                     </div>
