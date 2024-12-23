@@ -15,10 +15,7 @@ import MemberDetail from './components/MemberDetail';
 import EditMemberForm from './components/EditMemberForm';
 import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
-import EnhancedChatBot from './components/EnhancedChatBot';
-import FamilyAssistant from './components/FamilyAssistant';
-import SmartAssistantChat from './components/SmartAssistantChat';
-import CalendarChatBot from './components/CalendarChatBot';
+import UnifiedChatAssistant from './components/UnifiedChatAssistant';
 
 // Importación del logo
 import logo from './assets/images/family-logo.png';
@@ -28,6 +25,13 @@ import './styles/theme.css';
 import './styles/components.css';
 import './styles/utilities.css';
 import './styles/members.css';
+import './styles/chatAssistant.css';
+import './styles/messages.css';
+import './styles/animations.css';
+import './styles/chatbot.css';
+import './styles/index.css';
+import './styles/documents.css';
+
 
 function App() {
     const [showSplash, setShowSplash] = useState(true);
@@ -38,14 +42,13 @@ function App() {
 
     return (
         <AuthProvider>
-            <EnhancedChatBot />
-            <FamilyAssistant />
-            <CalendarChatBot />
+        
             
             {showSplash ? (
                 <SplashScreen onFinish={handleSplashFinish} />
             ) : (
                 <Router>
+                    
                     <div className="app-container">
                         <Routes>
                             {/* Rutas públicas */}
@@ -70,7 +73,7 @@ function App() {
                                                 <Route path="/edit-member/:id" element={<EditMemberForm />} />
                                                 <Route path="*" element={<Navigate to="/" replace />} />
                                             </Routes>
-                                            <SmartAssistantChat />
+                                            <UnifiedChatAssistant userId={1} />
                                         </main>
                                         <ThemeToggle />
                                     </div>

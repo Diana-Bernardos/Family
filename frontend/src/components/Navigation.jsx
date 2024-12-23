@@ -17,7 +17,7 @@ const Navigation = () => {
                         className="nav-logo" 
                         style={{ width: '40px', height: '40px' }}
                     />
-                    <span className="nav-title">FAMILY</span>
+                    <span className="nav-title"></span>
                 </Link>
                 
                 <div className="nav-links">

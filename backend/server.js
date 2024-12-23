@@ -27,6 +27,7 @@ const membersRouter = require('./routes/members');
 const eventsRouter = require('./routes/events');
 const documentsRouter = require('./routes/documents');
 const authRoutes = require('./routes/auth');
+const assistantRouter = require('./routes/assistant');
 
 // Crear directorios necesarios
 const dirs = ['uploads', 'uploads/avatars', 'uploads/documents'];
@@ -42,6 +43,7 @@ app.use('/api/members', membersRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/documents', documentsRouter);
 app.use('/api/auth', authRoutes);
+app.use('/api/assistant', assistantRouter);
 
 
 // Manejo de errores

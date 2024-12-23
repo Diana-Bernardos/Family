@@ -7,7 +7,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { api } from '../services/api';
 import ErrorBoundary from './ErrorBoundary';
-import SmartAssistantButton from './SmartAsistantButton';
+
 
 const Calendar = () => {
     const [events, setEvents] = useState([]);
@@ -50,12 +50,6 @@ const Calendar = () => {
 
     return (
         <div className="calendar-container">
-        <div className="absolute bottom-4 right-4">
-                <SmartAssistantButton 
-                    type="calendar"
-                    tooltip="¿Necesitas ayuda con los eventos?"
-                />
-            </div>
             <div className="calendar-header">
                 <h1>Calendario de Eventos</h1>
                 <Link to="/new-event" className="btn btn-primary">
