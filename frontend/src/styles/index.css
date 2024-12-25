@@ -84,7 +84,7 @@
     font-weight: 500;
 }
 
-.form-control {
+.event-form {
     width: 100%;
     padding: 0.5rem;
     border: 1px solid var(--border-color);
@@ -118,6 +118,47 @@
     .button-group {
         flex-direction: column;
     }
+}
+/* Actualizar en styles/index.css */
+.calendar-container {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.fc {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius);
+}
+
+.fc-toolbar-title {
+    color: var(--navy) !important;
+    font-weight: 600 !important;
+}
+
+.fc-button-primary {
+    background-color: var(--navy) !important;
+    border-color: var(--navy) !important;
+}
+
+.fc-button-primary:hover {
+    background-color: transparent !important;
+    color: var(--navy) !important;
+}
+
+.fc-daygrid-day {
+    background: var(--bg-primary);
+}
+
+.fc-daygrid-day-number {
+    color: var(--text-primary);
+}
+
+.fc-event {
+    border-radius: var(--border-radius) !important;
+    border: none !important;
 }
 
 /* Utilidades */

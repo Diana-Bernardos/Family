@@ -17,7 +17,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy": "gh-pages -d build"
-   
   },
   "browserslist": {
     "production": [
@@ -37,8 +36,4 @@
     "@testing-library/react": "^16.1.0",
     "jest": "^27.5.1"
   }
-  
-
-
 }
-

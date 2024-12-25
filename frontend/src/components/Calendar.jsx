@@ -1,94 +1,183 @@
-// src/components/Calendar.jsx
-
-
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { api } from '../services/api';
-import ErrorBoundary from './ErrorBoundary';
-
+import UnifiedAssistantService from '../services/UnifiedAssistantService';
 
 const Calendar = () => {
+    const navigate = useNavigate();
     const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [smartFilters, setSmartFilters] = useState([]);
-    const [aiAssistantActive, setAiAssistantActive] = useState(false);
+    const [assistantActive, setAssistantActive] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const handleSmartSearch = async (searchTerm) => {
-        const results = await SmartAssistantService.searchEvents(searchTerm, user.id);
-        updateCalendarEvents(results);
-    };
-
-    useEffect(() => {
-        loadEvents();
-    }, []);
-
-    const loadEvents = async () => {
+    const loadEvents = useCallback(async () => {
         try {
+            setLoading(true);
             const data = await api.getEvents();
             const formattedEvents = data.map(event => ({
                 id: event.id,
                 title: event.name,
                 date: event.event_date.split('T')[0],
                 backgroundColor: event.color || '#3788d8',
+                borderColor: event.color || '#3788d8',
+                textColor: getContrastColor(event.color || '#3788d8'),
                 extendedProps: {
                     icon: event.icon,
-                    image_url: event.image_url
+                    image: event.image ? {
+                        data: event.image.data,
+                        type: event.image.type
+                    } : null
                 }
             }));
             setEvents(formattedEvents);
+            setError(null);
         } catch (err) {
             setError('Error al cargar los eventos');
             console.error('Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const handleAssistantSearch = async () => {
+        if (!searchTerm.trim()) return;
+
+        try {
+            setLoading(true);
+            const response = await UnifiedAssistantService.processQuery(searchTerm, 'calendar');
+            
+            if (response.events) {
+                const formattedEvents = response.events.map(event => ({
+                    id: event.id,
+                    title: event.name,
+                    date: event.event_date.split('T')[0],
+                    backgroundColor: event.color || '#3788d8',
+                    borderColor: event.color || '#3788d8',
+                    textColor: getContrastColor(event.color || '#3788d8'),
+                    extendedProps: {
+                        icon: event.icon,
+                        image: event.image
+                    }
+                }));
+                setEvents(formattedEvents);
+            }
+        } catch (err) {
+            console.error('Error en la búsqueda asistida:', err);
+            // No establecemos error aquí para mantener los eventos existentes
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        loadEvents();
+    }, [loadEvents]);
+
+    const handleEventClick = (info) => {
+        navigate(`/event/${info.event.id}`);
+    };
+
+    // Función para determinar el color del texto basado en el color de fondo
+    const getContrastColor = (hexcolor) => {
+        // Convertir hex a RGB
+        const r = parseInt(hexcolor.slice(1, 3), 16);
+        const g = parseInt(hexcolor.slice(3, 5), 16);
+        const b = parseInt(hexcolor.slice(5, 7), 16);
+        
+        // Calcular luminancia
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        return luminance > 0.5 ? '#000000' : '#FFFFFF';
+    };
+
+    const renderEventContent = (eventInfo) => {
+        return (
+            <div className="flex items-center p-1 overflow-hidden">
+                {eventInfo.event.extendedProps.icon && (
+                    <i className={`${eventInfo.event.extendedProps.icon} mr-1`}></i>
+                )}
+                <span className="event-title truncate">{eventInfo.event.title}</span>
+            </div>
+        );
+    };
+
     if (error) {
-        return <div className="error-message">{error}</div>;
+        return (
+            <div className="error-container bg-red-50 p-4 rounded-lg">
+                <div className="text-red-700">{error}</div>
+                <button 
+                    onClick={loadEvents}
+                    className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                >
+                    Reintentar
+                </button>
+            </div>
+        );
     }
 
     return (
-        <div className="calendar-container">
-            <div className="calendar-header">
-                <h1>Calendario de Eventos</h1>
-                <Link to="/new-event" className="btn btn-primary">
-                    Añadir Evento
-                </Link>
+        <div className="calendar-container p-4">
+            <div className="calendar-header flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">Calendario de Eventos</h1>
+                <div className="flex gap-2">
+                    {assistantActive && (
+                        <div className="search-container flex gap-2">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Buscar eventos..."
+                                className="px-3 py-2 border rounded"
+                            />
+                            <button
+                                onClick={handleAssistantSearch}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            >
+                                Buscar
+                            </button>
+                        </div>
+                    )}
+                    <button
+                        onClick={() => setAssistantActive(!assistantActive)}
+                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    >
+                        {assistantActive ? 'Desactivar Asistente' : 'Activar Asistente'}
+                    </button>
+                    <Link 
+                        to="/new-event" 
+                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                        Añadir Evento
+                    </Link>
+                </div>
             </div>
+            
             <div className="calendar-content">
-                <FullCalendar
-                    plugins={[dayGridPlugin]}
-                    initialView="dayGridMonth"
-                    events={events}
-                    locale="es"
-                    headerToolbar={{
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth'
-                    }}
-                    eventClick={(info) => {
-                        window.location.href = `/event/${info.event.id}`;
-                    }}
-                    eventContent={(eventInfo) => {
-                        return (
-                            <div className="event-content">
-                                {eventInfo.event.extendedProps.icon && (
-                                    <i className={eventInfo.event.extendedProps.icon}></i>
-                                )}
-                                <span className="event-title">{eventInfo.event.title}</span>
-                            </div>
-                        );
-                    }}
-                    eventDidMount={(info) => {
-                        if (info.event.extendedProps.image_url) {
-                            info.el.style.backgroundImage = `url(http://localhost:3001${info.event.extendedProps.image_url})`;
-                            info.el.style.backgroundSize = 'contain';
-                            info.el.style.backgroundRepeat = 'no-repeat';
-                            info.el.style.backgroundPosition = 'right center';
-                        }
-                    }}
-                />
+                {loading ? (
+                    <div className="loading-spinner flex justify-center items-center h-96">
+                        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+                    </div>
+                ) : (
+                    <FullCalendar
+                        plugins={[dayGridPlugin]}
+                        initialView="dayGridMonth"
+                        events={events}
+                        locale="es"
+                        headerToolbar={{
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth'
+                        }}
+                        eventClick={handleEventClick}
+                        eventContent={renderEventContent}
+                        dayMaxEvents={true}
+                        height="auto"
+                        className="calendar-view"
+                    />
+                )}
             </div>
         </div>
     );
