@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {useNavigate } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { api } from '../services/api';
-import UnifiedAssistantService from '../services/UnifiedAssistantService';
 
 const Calendar = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [assistantActive, setAssistantActive] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
     const loadEvents = useCallback(async () => {
@@ -123,35 +121,7 @@ const Calendar = () => {
             <div className="calendar-header flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-bold">Calendario de Eventos</h1>
                 <div className="flex gap-2">
-                    {assistantActive && (
-                        <div className="search-container flex gap-2">
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Buscar eventos..."
-                                className="px-3 py-2 border rounded"
-                            />
-                            <button
-                                onClick={handleAssistantSearch}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                            >
-                                Buscar
-                            </button>
-                        </div>
-                    )}
-                    <button
-                        onClick={() => setAssistantActive(!assistantActive)}
-                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                    >
-                        {assistantActive ? 'Desactivar Asistente' : 'Activar Asistente'}
-                    </button>
-                    <Link 
-                        to="/new-event" 
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Añadir Evento
-                    </Link>
+                    
                 </div>
             </div>
             

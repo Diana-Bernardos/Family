@@ -1,7 +1,6 @@
 // src/services/chatbotService.js
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-const OLLAMA_URL = 'http://localhost:11434/api/generate';
 
 const defaultOptions = {
     headers: {
@@ -16,41 +15,32 @@ export const chatbotService = {
             // Obtener contexto
             const context = await this.getContextData();
             
-            // Preparar la petición a Ollama con el modelo específico
-            const ollamaResponse = await fetch(OLLAMA_URL, {
+            // Preparar la petición al backend
+            const response = await fetch(`${API_URL}/assistant/query`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...defaultOptions.headers
+                },
                 body: JSON.stringify({
-                    model: "llama3.2:1b-instruct-fp16",
-                    prompt: this.createPrompt(context, message),
-                    stream: false,
-                    options: {
-                        temperature: 0.7,
-                        top_k: 50,
-                        top_p: 0.95,
-                        num_ctx: 2048,
-                        repeat_penalty: 1.1
-                    }
+                    query: this.createPrompt(context, message),
+                    type: 'general'
                 })
             });
 
-            if (!ollamaResponse.ok) {
-                const errorData = await ollamaResponse.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Error en la respuesta de Ollama');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Error en la respuesta del servidor');
             }
 
-            const data = await ollamaResponse.json();
-            console.log('Respuesta de Ollama:', data); // Para debugging
-
-            if (data.error) {
-                throw new Error(data.error);
-            }
+            const data = await response.json();
+            console.log('Respuesta del servidor:', data);
 
             // Guardar en el historial
             await this.saveChatHistory(message, data.response);
 
             return {
-                response: data.response,
+                response: data.response || 'No se pudo generar una respuesta.',
                 context: context
             };
         } catch (error) {
@@ -94,15 +84,15 @@ export const chatbotService = {
         // Formatear eventos próximos
         const eventsText = upcomingEvents.map(event => 
             `- ${event.name} en ${new Date(event.event_date).toLocaleDateString()}`
-        ).join('\\n');
+        ).join('\n');
 
         // Formatear miembros
         const membersText = members.map(member => 
             `- ${member.name}`
-        ).join('\\n');
+        ).join('\n');
 
-        // Prompt específico para Llama 3.2
-        return `[INST] Eres un asistente familiar inteligente y amigable. Tienes acceso a la siguiente información:
+        // Prompt específico para el asistente
+        return `Eres un asistente familiar inteligente y amigable. Tienes acceso a la siguiente información:
 
 EVENTOS PRÓXIMOS:
 ${eventsText || 'No hay eventos próximos programados'}
@@ -116,7 +106,7 @@ ${userMessage}
 Instrucciones:
 1. Sé conciso y claro en tu respuesta
 2. Menciona eventos o miembros relevantes si aplica
-3. Ofrece sugerencias prácticas cuando sea apropiado [/INST]`;
+3. Ofrece sugerencias prácticas cuando sea apropiado`;
     },
 
     async saveChatHistory(message, response) {

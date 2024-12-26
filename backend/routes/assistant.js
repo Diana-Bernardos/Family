@@ -1,136 +1,150 @@
+// backend/routes/assistant.js
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
+const config = require('../config/config');
 
-// Obtener contexto completo para el asistente
-router.get('/context/:userId', async (req, res) => {
+// Obtener contexto general
+router.get('/context', async (req, res) => {
     try {
-        const userId = req.params.userId;
-        
-        // Obtener todos los datos relevantes en paralelo
-        const [events, members, documents] = await Promise.all([
+        // Obtener datos en paralelo
+        const [events, members] = await Promise.all([
             pool.query(
-                `SELECT * FROM events 
-                WHERE member_id IN (
-                    SELECT id FROM members WHERE user_id = ?
-                ) AND event_date >= CURDATE()
-                ORDER BY event_date ASC`,
-                [userId]
+                `SELECT e.*, GROUP_CONCAT(m.name) as participants 
+                 FROM events e 
+                 LEFT JOIN event_members em ON e.id = em.event_id 
+                 LEFT JOIN members m ON em.member_id = m.id 
+                 WHERE e.event_date >= CURDATE() 
+                 GROUP BY e.id 
+                 ORDER BY e.event_date ASC`
             ),
-            pool.query(
-                'SELECT * FROM members WHERE user_id = ?',
-                [userId]
-            ),
-            pool.query(
-                'SELECT * FROM member_documents WHERE member_id IN (SELECT id FROM members WHERE user_id = ?)',
-                [userId]
-            )
+            pool.query('SELECT id, name, email, phone, birth_date FROM members')
         ]);
 
         res.json({
-            events: events[0],
-            members: members[0],
-            documents: documents[0]
+            success: true,
+            data: {
+                events: events[0] || [],
+                members: members[0] || []
+            }
         });
     } catch (error) {
         console.error('Error getting context:', error);
-        res.status(500).json({ error: 'Error getting context' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Error al obtener el contexto'
+        });
     }
 });
 
-// Procesar consulta del asistente
+// Procesar consulta
 router.post('/query', async (req, res) => {
     try {
-        const { userId, query, type } = req.body;
-        let response;
+        const { query, type = 'general', memberId } = req.body;
 
-        switch (type) {
-            case 'calendar':
-                response = await processCalendarQuery(userId, query);
-                break;
-            case 'members':
-                response = await processMemberQuery(userId, query);
-                break;
-            case 'documents':
-                response = await processDocumentQuery(userId, query);
-                break;
-            default:
-                response = await processGeneralQuery(userId, query);
+        if (!query) {
+            return res.status(400).json({
+                success: false,
+                error: 'La consulta es requerida'
+            });
         }
 
-        res.json(response);
+        let response;
+        switch (type) {
+            case 'calendar':
+                response = await processCalendarQuery(query, memberId);
+                break;
+            case 'members':
+                response = await processMemberQuery(query, memberId);
+                break;
+            case 'documents':
+                response = await processDocumentQuery(query, memberId);
+                break;
+            default:
+                response = await processGeneralQuery(query);
+        }
+
+        res.json({
+            success: true,
+            data: response
+        });
     } catch (error) {
         console.error('Error processing query:', error);
-        res.status(500).json({ error: 'Error processing query' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Error al procesar la consulta' 
+        });
     }
 });
 
-// Funciones auxiliares para procesar consultas
-async function processCalendarQuery(userId, query) {
+async function processCalendarQuery(query, memberId) {
     const [events] = await pool.query(
-        `SELECT e.*, m.name as member_name 
-        FROM events e 
-        JOIN members m ON e.member_id = m.id 
-        WHERE m.user_id = ? AND e.event_date >= CURDATE()
-        ORDER BY e.event_date ASC`,
-        [userId]
+        `SELECT e.*, GROUP_CONCAT(m.name) as participants
+         FROM events e
+         LEFT JOIN event_members em ON e.id = em.event_id
+         LEFT JOIN members m ON em.member_id = m.id
+         WHERE e.event_date >= CURDATE()
+         ${memberId ? 'AND em.member_id = ?' : ''}
+         GROUP BY e.id
+         ORDER BY e.event_date ASC`,
+        memberId ? [memberId] : []
     );
-    
+
     return {
         type: 'calendar',
-        data: events,
-        message: formatCalendarResponse(events, query)
+        events: events || [],
+        summary: `Encontré ${events.length} eventos próximos.`
     };
 }
 
-async function processMemberQuery(userId, query) {
+async function processMemberQuery(query, memberId) {
     const [members] = await pool.query(
         `SELECT m.*, 
-        (SELECT COUNT(*) FROM events e WHERE e.member_id = m.id AND e.event_date >= CURDATE()) as upcoming_events,
-        (SELECT COUNT(*) FROM member_documents md WHERE md.member_id = m.id) as document_count
-        FROM members m
-        WHERE m.user_id = ?`,
-        [userId]
+         (SELECT COUNT(*) FROM event_members em 
+          JOIN events e ON em.event_id = e.id 
+          WHERE em.member_id = m.id AND e.event_date >= CURDATE()) as upcoming_events
+         FROM members m
+         ${memberId ? 'WHERE m.id = ?' : ''}`,
+        memberId ? [memberId] : []
     );
 
     return {
         type: 'members',
-        data: members,
-        message: formatMemberResponse(members, query)
+        members: members || [],
+        summary: `Información sobre ${members.length} miembro(s).`
     };
 }
 
-async function processDocumentQuery(userId, query) {
+async function processDocumentQuery(query, memberId) {
     const [documents] = await pool.query(
         `SELECT md.*, m.name as member_name 
-        FROM member_documents md
-        JOIN members m ON md.member_id = m.id
-        WHERE m.user_id = ?
-        ORDER BY md.upload_date DESC`,
-        [userId]
+         FROM member_documents md
+         JOIN members m ON md.member_id = m.id
+         ${memberId ? 'WHERE md.member_id = ?' : ''}
+         ORDER BY md.upload_date DESC`,
+        memberId ? [memberId] : []
     );
 
     return {
         type: 'documents',
-        data: documents,
-        message: formatDocumentResponse(documents, query)
+        documents: documents || [],
+        summary: `Encontré ${documents.length} documentos.`
     };
 }
 
-// Funciones de formateo
-function formatCalendarResponse(events, query) {
-    // Lógica para formatear respuesta de calendario
-    return `Encontré ${events.length} eventos próximos.`;
-}
+async function processGeneralQuery(query) {
+    // Recopilar información general
+    const [eventCount] = await pool.query(
+        'SELECT COUNT(*) as count FROM events WHERE event_date >= CURDATE()'
+    );
+    const [memberCount] = await pool.query('SELECT COUNT(*) as count FROM members');
 
-function formatMemberResponse(members, query) {
-    // Lógica para formatear respuesta de miembros
-    return `Hay ${members.length} miembros en tu familia.`;
-}
-
-function formatDocumentResponse(documents, query) {
-    // Lógica para formatear respuesta de documentos
-    return `Tienes ${documents.length} documentos almacenados.`;
+    return {
+        type: 'general',
+        summary: `Tu familia tiene ${memberCount[0].count} miembros y ${eventCount[0].count} eventos próximos.`,
+        query: query
+    };
 }
 
 module.exports = router;
