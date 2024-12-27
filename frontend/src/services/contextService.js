@@ -1,3 +1,4 @@
+// src/services/contextService.js
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import axios from 'axios';
 
@@ -6,18 +7,18 @@ const ChatContext = createContext(null);
 export const ChatContextProvider = ({ children }) => {
   const [context, setContext] = useState({
     events: [],
-    documents: [],
+    members: [],
     chatHistory: [],
   });
 
   const loadContext = useCallback(async (userId) => {
     try {
-      const response = await axios.get(`/api/context/${userId}`, {
+      const response = await axios.get(`/api/assistant/context/${userId}`, {
         headers: {
           'Cache-Control': 'max-age=300',
         },
       });
-      setContext(response.data);
+      setContext(response.data.data);
     } catch (error) {
       console.error('Error loading context:', error);
     }
@@ -26,7 +27,7 @@ export const ChatContextProvider = ({ children }) => {
   const clearContext = useCallback(() => {
     setContext({
       events: [],
-      documents: [],
+      members: [],
       chatHistory: [],
     });
   }, []);
@@ -51,5 +52,4 @@ export const useChatContext = () => {
   }
   return context;
 };
-
  

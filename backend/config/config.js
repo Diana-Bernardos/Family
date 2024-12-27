@@ -1,5 +1,5 @@
 // config/config.js
-module.exports = {
+const config = {
     OLLAMA_API_URL: 'http://localhost:11434/api',
     MODEL_NAME: 'llama3.2:1b-instruct-fp16',
     PORT: 3001,
@@ -10,3 +10,5 @@ module.exports = {
         database: 'calendar_app'
     }
 };
+
+module.exports = config;

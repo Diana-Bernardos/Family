@@ -4,8 +4,9 @@ const router = express.Router();
 const pool = require('../config/database');
 const axios = require('axios');
 const config = require('../config/config');
+const pool = require ('../config/database');
 
-// Auxiliary functions to fetch data
+// Funciones auxiliares para obtener datos
 async function getRelevantEvents(userId) {
     try {
         const [events] = await pool.query(`
@@ -17,7 +18,7 @@ async function getRelevantEvents(userId) {
         `, [userId]);
         return events;
     } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error obteniendo eventos:', error);
         return [];
     }
 }
@@ -30,7 +31,7 @@ async function getRelevantMembers(userId) {
         `, [userId]);
         return members;
     } catch (error) {
-        console.error('Error fetching members:', error);
+        console.error('Error obteniendo miembros:', error);
         return [];
     }
 }
@@ -43,7 +44,7 @@ async function getUserPreferences(userId) {
         `, [userId]);
         return preferences[0] || {};
     } catch (error) {
-        console.error('Error fetching preferences:', error);
+        console.error('Error obteniendo preferencias:', error);
         return {};
     }
 }
@@ -58,20 +59,20 @@ async function getSearchHistory(userId) {
         `, [userId]);
         return history;
     } catch (error) {
-        console.error('Error fetching search history:', error);
+        console.error('Error obteniendo historial:', error);
         return [];
     }
 }
 
 async function getAIResponse(query, context) {
     try {
-        // Prepare the prompt for the AI model
+        // Preparar prompt para el modelo de IA
         const prompt = createPrompt(query, context);
 
-        // Call Ollama to generate the response
+        // Llamada a Ollama 
         const response = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
             model: config.MODEL_NAME,
-            prompt: prompt,
+            prompt: message,
             stream: false,
             options: {
                 temperature: 0.7,
@@ -86,47 +87,51 @@ async function getAIResponse(query, context) {
             context: context
         };
     } catch (error) {
-        console.error('Error getting AI response:', error);
-        throw new Error('Could not process the AI query');
+        console.error('Error obteniendo respuesta de IA:', error);
+        throw new Error('No se pudo procesar la consulta de IA');
     }
 }
 
 function createPrompt(query, context) {
     const { events, members, history, userPreferences } = context;
 
-    // Format the events
+    // Formatear eventos
     const eventsText = events.map(event => 
-        `- ${event.name} on ${new Date(event.event_date).toLocaleDateString()}`
+        `- ${event.name} el ${new Date(event.event_date).toLocaleDateString()}`
     ).join('\n');
 
-    // Format the members
+    // Formatear miembros
     const membersText = members.map(member => 
         `- ${member.name}`
     ).join('\n');
 
-    // Create the contextualized prompt
-    return `You are an intelligent family assistant. You have the following context:
+    // Crear prompt contextualizado
+    return `Eres un asistente familiar inteligente. Tienes el siguiente contexto:
 
-UPCOMING EVENTS:
-${eventsText || 'No upcoming events'}
+EVENTOS PRÓXIMOS:
+${eventsText || 'No hay eventos próximos'}
 
-FAMILY MEMBERS:
-${membersText || 'No family members registered'}
+MIEMBROS DE LA FAMILIA:
+${membersText || 'No hay miembros registrados'}
 
-RECENT HISTORY:
-${history.map(h => h.message).join('\n') || 'No recent history'}
+HISTORIAL RECIENTE:
+${history.map(h => h.message).join('\n') || 'Sin historial reciente'}
 
-USER PREFERENCES:
-${JSON.stringify(userPreferences) || 'No specific preferences'}
+PREFERENCIAS DEL USUARIO:
+${JSON.stringify(userPreferences) || 'Sin preferencias específicas'}
 
-Based on this context, respond to the following query:
+Basado en este contexto, responde a la siguiente consulta:
 ${query}
 
-Instructions:
-1. Be concise and precise
-2. Utilize the contextual information
-3. Offer practical suggestions
-4. Maintain a friendly and familiar tone`;
+Instrucciones:
+1. Sé conciso y preciso
+2. Utiliza la información contextual
+3. Ofrece sugerencias prácticas
+4. Muestra los eventos de cualquier mes del calendario
+5. Muestra los eventos de los miembros de la familia
+6. Crea eventos o tareas en el calendario cuando se te pidan
+7. Muestra detalles de los miembros de la familia
+8. Mantén un tono amigable y familiar`;
 }
 
 async function saveToHistory(userId, query, aiResponse) {
@@ -137,16 +142,16 @@ async function saveToHistory(userId, query, aiResponse) {
             VALUES (?, ?, ?, NOW())
         `, [userId, query, aiResponse.response]);
     } catch (error) {
-        console.error('Error saving history:', error);
+        console.error('Error guardando historial:', error);
     }
 }
 
-// Routes
+// Rutas
 router.post('/analyze', async (req, res) => {
     const { userId, query } = req.body;
     
     try {
-        // Fetch the relevant data
+        // Obtener datos relevantes
         const [events, members, history, userPreferences] = await Promise.all([
             getRelevantEvents(userId),
             getRelevantMembers(userId),
@@ -154,7 +159,7 @@ router.post('/analyze', async (req, res) => {
             getUserPreferences(userId)
         ]);
 
-        // Prepare the context for the AI
+        // Preparar contexto para la IA
         const aiContext = {
             events,
             members,
@@ -162,28 +167,28 @@ router.post('/analyze', async (req, res) => {
             userPreferences
         };
 
-        // Get the AI response
+        // Obtener respuesta de la IA
         const aiResponse = await getAIResponse(query, aiContext);
 
-        // Save to history
+        // Guardar en historial
         await saveToHistory(userId, query, aiResponse);
 
         res.json(aiResponse);
     } catch (error) {
-        console.error('Error in AI analysis:', error);
+        console.error('Error en análisis IA:', error);
         res.status(500).json({ 
-            error: 'Error in analysis',
+            error: 'Error en análisis',
             details: error.message 
         });
     }
 });
 
-// Process message with context
+// Procesar mensaje con contexto
 router.post('/process', async (req, res) => {
     const { message, userId } = req.body;
 
     try {
-        // Fetch the context
+        // Obtener contexto
         const [events] = await pool.query(
             `SELECT * FROM events 
              WHERE event_date >= CURDATE()
@@ -194,17 +199,17 @@ router.post('/process', async (req, res) => {
             'SELECT * FROM members'
         );
 
-        // Call Ollama to generate the response
+        // Llamada a Ollama para generar respuesta
         const ollamaResponse = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
             model: config.MODEL_NAME,
-            prompt: `Event context: ${JSON.stringify(events)}
-Family members: ${JSON.stringify(members)}
-Query: ${message}
-Respond in a friendly and contextualized manner.`,
+            prompt: `Contexto de eventos: ${JSON.stringify(events)}
+Miembros de la familia: ${JSON.stringify(members)}
+Consulta: ${message}
+Responde de manera amigable y contextualizada.`,
             stream: false
         });
 
-        // Save the interaction
+        // Guardar interacción
         await pool.query(
             `INSERT INTO chat_interactions 
              (user_id, message, response, context, created_at) 

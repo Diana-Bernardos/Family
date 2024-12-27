@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { api } from '../services/api';
+import { chatbotService } from '../services/chatbotService';
 
 const Calendar = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const loadEvents = useCallback(async () => {
         try {
-            setLoading(true);
+            setIsLoading(true);
             const data = await api.getEvents();
             const formattedEvents = data.map(event => ({
                 id: event.id,
@@ -33,10 +34,10 @@ const Calendar = () => {
             setEvents(formattedEvents);
             setError(null);
         } catch (err) {
-            setError('Error al cargar los eventos');
+            setError('Error loading events');
             console.error('Error:', err);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     }, []);
 
@@ -44,8 +45,8 @@ const Calendar = () => {
         if (!searchTerm.trim()) return;
 
         try {
-            setLoading(true);
-            const response = await UnifiedAssistantService.processQuery(searchTerm, 'calendar');
+            setIsLoading(true);
+            const response = await chatbotService.processUserQuery(searchTerm, 'calendar');
             
             if (response.events) {
                 const formattedEvents = response.events.map(event => ({
@@ -63,10 +64,9 @@ const Calendar = () => {
                 setEvents(formattedEvents);
             }
         } catch (err) {
-            console.error('Error en la búsqueda asistida:', err);
-            // No establecemos error aquí para mantener los eventos existentes
+            console.error('Error in assistant search:', err);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -78,14 +78,13 @@ const Calendar = () => {
         navigate(`/event/${info.event.id}`);
     };
 
-    // Función para determinar el color del texto basado en el color de fondo
     const getContrastColor = (hexcolor) => {
-        // Convertir hex a RGB
+        // Convert hex to RGB
         const r = parseInt(hexcolor.slice(1, 3), 16);
         const g = parseInt(hexcolor.slice(3, 5), 16);
         const b = parseInt(hexcolor.slice(5, 7), 16);
         
-        // Calcular luminancia
+        // Calculate luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         
         return luminance > 0.5 ? '#000000' : '#FFFFFF';
@@ -105,12 +104,17 @@ const Calendar = () => {
     if (error) {
         return (
             <div className="error-container bg-red-50 p-4 rounded-lg">
-                <div className="text-red-700">{error}</div>
-                <button 
+                <div className="text-red-700 font-medium">
+                    Oops, something went wrong! We couldn't load the events.
+                </div>
+                <p className="text-red-600 mt-2">
+                    {error}
+                </p>
+                <button
                     onClick={loadEvents}
-                    className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                    className="mt-4 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
                 >
-                    Reintentar
+                    Try again
                 </button>
             </div>
         );
@@ -119,14 +123,12 @@ const Calendar = () => {
     return (
         <div className="calendar-container p-4">
             <div className="calendar-header flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Calendario de Eventos</h1>
-                <div className="flex gap-2">
-                    
-                </div>
+                <h1 className="text-2xl font-bold">Event Calendar</h1>
+                
             </div>
             
             <div className="calendar-content">
-                {loading ? (
+                {isLoading ? (
                     <div className="loading-spinner flex justify-center items-center h-96">
                         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
                     </div>

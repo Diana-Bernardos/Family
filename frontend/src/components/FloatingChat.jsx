@@ -1,8 +1,10 @@
+// src/components/FloatingChat.jsx
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import '../styles/FloatingChat.css';
 import ChatService from '../services/chatService';
 import { useChatContext } from '../services/contextService';
+import { useAuth } from '../context/AuthContext';
 
 const FloatingChat = memo(() => {
     const [isOpen, setIsOpen] = useState(false);
@@ -13,27 +15,13 @@ const FloatingChat = memo(() => {
     const inputRef = useRef(null);
 
     const { context, loadContext } = useChatContext();
+    const { user } = useAuth();
 
     useEffect(() => {
-        const userId = 1; 
-        loadContext(userId);
-    }, [loadContext]);
-
-    const handleSendMessage = async () => {
-        const message = inputMessage.trim();
-        if (message) {
-            try {
-                const { userMessage, assistantMessage } = await ChatService.sendMessage(
-                    userId,
-                    message
-                );
-                // Handle the user and assistant messages
-            } catch (error) {
-                console.error('Error sending message:', error);
-                // Handle the error
-            }
+        if (user && user.id) {
+            loadContext(user.id);
         }
-    };
+    }, [loadContext, user]);
 
     // Optimized scroll to bottom effect
     useEffect(() => {
@@ -134,7 +122,7 @@ const FloatingChat = memo(() => {
                             onClick={() => setIsOpen(false)}
                             aria-label="Close chat"
                         >
-                            <X size={20} aria-hidden="true" />
+                           
                         </button>
                     </div>
 
