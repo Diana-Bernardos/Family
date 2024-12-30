@@ -22,13 +22,15 @@
     --bg-secondary: var(--peach);
     --bg-accent: var(--mint);
     --bg-light: var(--sky);
+    --border-color: #e2e8f0;
+    --border-radius: 8px;
 
     /* Gradiente de fondo */
     --bg-gradient: linear-gradient(135deg, var(--sky) 0%, var(--mint) 50%, var(--peach) 100%);
 
     /* Sombras */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
 
     /* Espaciados */

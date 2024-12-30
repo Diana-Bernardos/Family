@@ -10,28 +10,19 @@ const pool = require('./config/database');
 
 const app = express();
 
-// CORS Options
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://localhost:3001'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Content-Type',
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'Origin'
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
     optionsSuccessStatus: 200
 };
 
-// Middlewares
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
-// Create necessary directories
 const dirs = ['uploads', 'uploads/avatars', 'uploads/documents'];
 dirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
@@ -39,7 +30,6 @@ dirs.forEach(dir => {
     }
 });
 
-// Routes
 const membersRouter = require('./routes/members');
 const eventsRouter = require('./routes/events');
 const documentsRouter = require('./routes/documents');
@@ -54,10 +44,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assistant', assistantRouter);
 app.use('/api/ai', aiRouter);
 
-// Ollama Assistant Endpoint
 app.post('/api/assistant/query', async (req, res) => {
     const { query } = req.body;
-
+    
     try {
         const response = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
             model: config.MODEL_NAME,
@@ -71,21 +60,19 @@ app.post('/api/assistant/query', async (req, res) => {
                 repeat_penalty: 1.1
             }
         });
-
+        
         res.json({
             response: response.data.response || 'No se pudo generar una respuesta.'
         });
     } catch (error) {
         console.error('Error al llamar a Ollama:', error.response ? error.response.data : error.message);
-        res.status(500).json({ 
+        res.status(500).json({
             response: 'Error al procesar el mensaje',
-            error: error.message 
+            error: error.message
         });
     }
 });
 
-
-// Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error detallado:', err);
     res.status(500).json({
@@ -94,10 +81,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
 const PORT = process.env.PORT || config.PORT;
 const server = app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-module.exports = server;
+module.exports = app;

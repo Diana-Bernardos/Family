@@ -2,73 +2,72 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 class ChatService {
-  constructor() {
-    this.messageCache = new Map();
-    this.MAX_CACHE_SIZE = 50;
-  }
-
-  async sendMessage(userId, message) {
-    const requestId = uuidv4();
-
-    if (this.messageCache.size >= this.MAX_CACHE_SIZE) {
-      const oldestKey = this.messageCache.keys().next().value;
-      this.messageCache.delete(oldestKey);
+    constructor() {
+        this.messageCache = new Map();
+        this.MAX_CACHE_SIZE = 50;
     }
 
-    const userMessage = {
-      id: requestId,
-      text: message,
-      sender: 'user',
-      timestamp: Date.now(),
-    };
+    async sendMessage(userId, message) {
+        const requestId = uuidv4();
+        
+        if (this.messageCache.size >= this.MAX_CACHE_SIZE) {
+            const oldestKey = this.messageCache.keys().next().value;
+            this.messageCache.delete(oldestKey);
+        }
 
-    this.messageCache.set(requestId, userMessage);
+        const userMessage = {
+            id: requestId,
+            text: message,
+            sender: 'user',
+            timestamp: Date.now(),
+        };
 
-    try {
-      const response = await axios.post('/api/chatbot/chat', {
-        userId,
-        message,
-        clientTimestamp: Date.now(),
-        requestId,
-      }, {
-        timeout: 10000,
-        headers: {
-          'X-Request-ID': requestId,
-        },
-      });
+        this.messageCache.set(requestId, userMessage);
 
-      const aiMessage = {
-        id: response.data.responseId || uuidv4(),
-        text: response.data.response,
-        sender: 'ai',
-        timestamp: Date.now(),
-      };
+        try {
+            const response = await axios.post('/api/assistant/query', {
+                userId,
+                query: message,
+                requestId,
+            }, {
+                timeout: 10000,
+                headers: {
+                    'X-Request-ID': requestId,
+                },
+            });
 
-      this.messageCache.set(aiMessage.id, aiMessage);
+            const aiMessage = {
+                id: response.data.responseId || uuidv4(),
+                text: response.data.response,
+                sender: 'ai',
+                timestamp: Date.now(),
+                context: response.data.context
+            };
 
-      return {
-        userMessage,
-        assistantMessage: aiMessage,
-      };
-    } catch (error) {
-      console.error('Chat service error:', error);
-      const errorMessage = {
-        id: uuidv4(),
-        text: 'Error processing your message',
-        sender: 'error',
-        timestamp: Date.now(),
-      };
-      return {
-        userMessage,
-        assistantMessage: errorMessage,
-      };
+            this.messageCache.set(aiMessage.id, aiMessage);
+
+            return {
+                userMessage,
+                assistantMessage: aiMessage,
+            };
+        } catch (error) {
+            console.error('Chat service error:', error);
+            return {
+                userMessage,
+                assistantMessage: {
+                    id: uuidv4(),
+                    text: 'Error processing your message',
+                    sender: 'error',
+                    timestamp: Date.now(),
+                }
+            };
+        }
     }
-  }
 
-  getCachedMessages() {
-    return Array.from(this.messageCache.values())
-      .sort((a, b) => a.timestamp - b.timestamp);
-  }
+    getCachedMessages() {
+        return Array.from(this.messageCache.values())
+            .sort((a, b) => a.timestamp - b.timestamp);
+    }
 }
 
 export default new ChatService();

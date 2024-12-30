@@ -24,11 +24,15 @@ const FloatingChat = memo(() => {
     }, [loadContext, user]);
 
     // Optimized scroll to bottom effect
+   
+
+    const scrollToBottom = useCallback(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, []);
+    
     useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [messages]);
+      scrollToBottom();
+    }, [messages, scrollToBottom]);
 
     // Memoized send handler with improved error handling
     const handleSend = useCallback(async () => {
