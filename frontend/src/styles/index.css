@@ -6,7 +6,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.625rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius);
     font-weight: 600;
     font-size: 0.875rem;
@@ -14,12 +14,8 @@
     transition: all 0.2s ease;
     cursor: pointer;
     border: 2px solid transparent;
-    box-shadow: var(--shadow-sm);
     gap: 0.5rem;
-    text-transform: uppercase;
-    margin: 0 0.5rem 0.5rem 0;
-    min-width: 120px;
-}
+  }
 
 .button-group {
     display: flex;
@@ -31,13 +27,17 @@
 .btn-primary {
     background-color: var(--primary);
     color: white;
-    border-color: var(--primary);
-}
+    width:100px;
+    height: 50px;
+    padding: 10px;
 
-.btn-primary:hover {
+  }
+
+  .btn-primary:hover {
     background-color: transparent;
+    border-color: var(--primary);
     color: var(--primary);
-}
+  }
 
 .btn-secondary {
     background-color: var(--secondary);
@@ -74,18 +74,19 @@
 
 /* Formularios */
 .form-group {
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem;
+    margin-left: 40px;
   }
   
-  .form-control {
+  .event form {
     width: 100%;
     padding: 1rem 1.25rem;
     border: 2px solid var(--border-color);
     border-radius: 12px;
     font-size: 1rem;
     transition: all 0.3s;
-    background: var(--bg-primary);
     color: var(--text-primary);
+    margin-left: 40px;
   }
   
   .form-control:focus {
@@ -163,7 +164,7 @@
 }
 
 .fc-button-primary:hover {
-    background-color: transparent !important;
+
     color: var(--navy) !important;
 }
 
@@ -176,11 +177,12 @@
 }
 
 .fc .fc-event {
-    background: transparent !important;
+
     border: 2px solid var(--border-color) !important;
     border-radius: 8px !important;
-    padding: 0.5rem;
-    margin: 0.25rem 0;
+    margin: 0.15rem ;
+
+    
   }
   
   .fc-event-title {
@@ -198,7 +200,9 @@
   }
  
  .fc-event-icon {
-    font-size: 1rem;
+    font-size: 0.5rem;
+    gap: 1rem;
+
  }
 
 /* Utilidades */
