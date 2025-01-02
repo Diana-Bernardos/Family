@@ -24,7 +24,7 @@ const ThemeToggle = () => {
             className="theme-toggle-btn"
             aria-label={`Cambiar a modo ${theme === 'light' ? 'oscuro' : 'claro'}`}
         >
-            {theme === 'light' ? '🌙' : '☀️'}
+              {theme === 'light' ?   '🌙' : '☀️'}
         </button>
     );
 };

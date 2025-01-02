@@ -1,6 +1,7 @@
+// frontend/src/components/FloatingChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
-import { useChatContext } from '../services/chatService';
+import { useChatContext } from '../context/chatContext';
 import { useAuth } from '../context/AuthContext';
 import '../styles/FloatingChat.css';
 
@@ -9,20 +10,25 @@ const FloatingChat = () => {
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
     
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const chatBoxRef = useRef(null);
 
-    const { context, loadContext, sendMessage, getSuggestions } = useChatContext();
+    const { context, loadContext, sendMessage } = useChatContext();
+
     const { user } = useAuth();
 
-    // Cargar contexto al abrir chat
+    // Cargar contexto cuando se abre el chat
     useEffect(() => {
         if (user?.id && isOpen) {
-            loadContext(user.id);
+            loadContext(user.id).catch(err => {
+                console.error('Error loading context:', err);
+                setError('Error al cargar el contexto');
+            });
         }
-    }, [user, isOpen, loadContext]);
+    }, [user?.id, isOpen, loadContext]);
 
     // Auto-scroll a últimos mensajes
     const scrollToBottom = useCallback(() => {
@@ -40,42 +46,44 @@ const FloatingChat = () => {
 
         try {
             setIsLoading(true);
+            setError(null);
             
-            // Agregar mensaje del usuario
+            // Mensaje del usuario
             const userMessage = {
                 id: Date.now(),
                 type: 'user',
                 content: trimmedMessage
             };
+            
             setMessages(prev => [...prev, userMessage]);
             setInputMessage('');
 
-            // Obtener respuesta del asistente
+            // Obtener respuesta
             const response = await sendMessage(user.id, trimmedMessage);
-
-            // Agregar respuesta del asistente
+            
+            // Respuesta del asistente
             const assistantMessage = {
                 id: Date.now() + 1,
                 type: 'assistant',
-                content: response.response
+                content: response.response || 'Lo siento, no pude procesar tu mensaje.'
             };
+            
             setMessages(prev => [...prev, assistantMessage]);
-
-            // Obtener nuevas sugerencias
-            await getSuggestions(user.id);
 
         } catch (error) {
             console.error('Chat error:', error);
+            setError(error.message || 'Error al procesar el mensaje');
+            
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 type: 'error',
-                content: 'Error al procesar el mensaje'
+                content: 'Error al procesar el mensaje. Por favor, intenta de nuevo.'
             }]);
         } finally {
             setIsLoading(false);
             inputRef.current?.focus();
         }
-    }, [inputMessage, isLoading, sendMessage, getSuggestions, user]);
+    }, [inputMessage, isLoading, sendMessage, user]);
 
     const handleSubmit = useCallback((e) => {
         e.preventDefault();
@@ -104,11 +112,7 @@ const FloatingChat = () => {
                 <div className="chat-window" role="dialog" aria-labelledby="chat-header">
                     <div className="chat-header" id="chat-header">
                         <h5>Asistente Familiar</h5>
-                        {context?.suggestions?.length > 0 && (
-                            <div className="suggestion-count">
-                                {context.suggestions.length} sugerencias
-                            </div>
-                        )}
+                        {error && <div className="error-badge">{error}</div>}
                     </div>
 
                     <div className="chat-messages" ref={chatBoxRef}>
@@ -117,7 +121,7 @@ const FloatingChat = () => {
                                 {suggestion}
                             </div>
                         ))}
-                        
+
                         {messages.map((message) => (
                             <div
                                 key={message.id}
@@ -127,6 +131,14 @@ const FloatingChat = () => {
                                     <div className="message-content">
                                         {message.content}
                                     </div>
+                                    {message.type === 'error' && (
+                                        <button 
+                                            onClick={handleSend} 
+                                            className="retry-button"
+                                        >
+                                            Reintentar
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -166,6 +178,7 @@ const FloatingChat = () => {
                             type="submit"
                             disabled={isLoading || !inputMessage.trim()}
                             className="send-button"
+                            aria-label="Enviar mensaje"
                         >
                             <Send size={20} />
                         </button>
@@ -177,3 +190,4 @@ const FloatingChat = () => {
 };
 
 export default FloatingChat;
+

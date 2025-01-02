@@ -27,9 +27,13 @@
 .btn-primary {
     background-color: var(--primary);
     color: white;
-    width:100px;
-    height: 50px;
-    padding: 10px;
+    width: 100px;
+    height: 40px;
+    padding: 9px;
+    display: flex;
+    align-items:center;
+    margin-left: 40px;
+  
 
   }
 
@@ -43,6 +47,17 @@
     background-color: var(--secondary);
     color: var(--text-primary);
     border-color: var(--secondary);
+    height: 40px;
+    
+    display: flex;
+    align-items:center;
+    column-gap: 10px;
+    margin-left: 40px;
+   
+   
+   
+    
+    
 }
 
 .btn-secondary:hover {
@@ -86,7 +101,7 @@
     font-size: 1rem;
     transition: all 0.3s;
     color: var(--text-primary);
-    margin-left: 40px;
+    
   }
   
   .form-control:focus {
@@ -105,6 +120,7 @@
     margin-bottom: 0.75rem;
     font-weight: 600;
     color: var(--text-primary);
+   
   }
  
 
@@ -132,11 +148,17 @@
 @media (max-width: 768px) {
     .btn {
         flex-grow: 1;
-        margin: 0 0 0.5rem 0;
+        margin: 0 0 20px 0;
+      
+      
+
     }
 
     .button-group {
-        flex-direction: column;
+        flex-direction:column;
+        width: auto;
+       
+        
     }
 }
 /* Actualizar en styles/index.css */

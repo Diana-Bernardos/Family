@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../src/context/AuthContext';
-import { ChatContextProvider } from './services/chatService';
+import { ChatContextProvider } from './context/chatContext';
+import ErrorBoundary from './components/ErrorBoundary';  // Importa tu ErrorBoundary
 
 import Login from './components/Login';
 import Register from './components/Register';
@@ -18,9 +19,6 @@ import EditMemberForm from './components/EditMemberForm';
 import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
 import FloatingChat from './components/FloatingChat';
-
-// Importación del logo
-import logo from './assets/images/family-logo.png';
 
 // Importación de estilos
 import './styles/theme.css';
@@ -42,47 +40,51 @@ function App() {
 
     return (
         <AuthProvider>
-            <ChatContextProvider>
-                {showSplash ? (
-                    <SplashScreen onFinish={handleSplashFinish} />
-                ) : (
+            <ErrorBoundary>  
+                <ChatContextProvider>
                     <Router>
-                        <div className="app-container">
-                            <Routes>
-                                {/* Rutas públicas */}
-                                <Route path="/login" element={<Login />} />
-                                <Route path="/register" element={<Register />} />
+                        {showSplash ? (
+                            <SplashScreen onFinish={handleSplashFinish} />
+                        ) : (
+                            <div className="app-container">
+                                <Routes>
+                                    {/* Rutas públicas */}
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/register" element={<Register />} />
 
-                                {/* Rutas protegidas */}
-                                <Route path="/*" element={
-                                    <PrivateRoute>
-                                        <div className="authenticated-container">
-                                            <Navigation />
-                                            <main className="main-content">
-                                                <Routes>
-                                                    <Route path="/" element={<Calendar />} />
-                                                    <Route path="/new-event" element={<EventForm />} />
-                                                    <Route path="/event/:id" element={<EventDetail />} />
-                                                    <Route path="/edit-event/:id" element={<EditEventForm />} />
-                                                    <Route path="/members" element={<MemberList />} />
-                                                    <Route path="/new-member" element={<MemberForm />} />
-                                                    <Route path="/member/:id" element={<MemberDetail />} />
-                                                    <Route path="/edit-member/:id" element={<EditMemberForm />} />
-                                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                                </Routes>
-                                            </main>
-                                            <ThemeToggle />
-                                        </div>
-                                        <FloatingChat />
-                                    </PrivateRoute>
-                                } />
-                            </Routes>
-                        </div>
+                                    {/* Rutas protegidas */}
+                                    <Route path="/*" element={
+                                        <PrivateRoute>
+                                            <div className="authenticated-container">
+                                                <Navigation />
+                                                <main className="main-content">
+                                                    <Routes>
+                                                        <Route path="/" element={<Calendar />} />
+                                                        <Route path="/new-event" element={<EventForm />} />
+                                                        <Route path="/event/:id" element={<EventDetail />} />
+                                                        <Route path="/edit-event/:id" element={<EditEventForm />} />
+                                                        <Route path="/members" element={<MemberList />} />
+                                                        <Route path="/new-member" element={<MemberForm />} />
+                                                        <Route path="/member/:id" element={<MemberDetail />} />
+                                                        <Route path="/edit-member/:id" element={<EditMemberForm />} />
+                                                        <Route path="*" element={<Navigate to="/" replace />} />
+                                                    </Routes>
+                                                </main>
+                                                <ThemeToggle />
+                                            </div>
+                                        </PrivateRoute>
+                                    } />
+                                </Routes>
+                            </div>
+                        )}
+                        <FloatingChat />
                     </Router>
-                )}
-            </ChatContextProvider>
+                </ChatContextProvider>
+            </ErrorBoundary>
         </AuthProvider>
     );
 }
 
 export default App;
+
+

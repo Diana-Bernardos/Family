@@ -52,7 +52,7 @@ const MemberForm = () => {
             {error && <div className="error-message">{error}</div>}
 
             <div className="form-group">
-                <label>Nombre:</label>
+                <label>Nombre  </label>
                 <input
                     type="text"
                     name="name"
@@ -63,7 +63,7 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Email:</label>
+                <label>Email  </label>
                 <input
                     type="email"
                     name="email"
@@ -75,7 +75,7 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Teléfono:</label>
+                <label>Teléfono  </label>
                 <input
                     type="tel"
                     name="phone"
@@ -85,7 +85,7 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Fecha de Nacimiento:</label>
+                <label>Fecha de Nacimiento  </label>
                 <input
                     type="date"
                     name="birth_date"
@@ -95,7 +95,7 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Avatar:</label>
+                <label>Avatar  </label>
                 <input
                     type="file"
                     name="avatar"

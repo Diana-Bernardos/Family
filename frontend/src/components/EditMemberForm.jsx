@@ -69,10 +69,10 @@ function EditMemberForm() {
 
     return (
         <form onSubmit={handleSubmit} className="member-form">
-            <h2>Editar Miembro</h2>
+            <h2>Editar Miembro </h2>
             
             <div className="form-group">
-                <label>Nombre:</label>
+                <label>Nombre  </label>
                 <input
                     type="text"
                     name="name"
@@ -83,7 +83,7 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Email:</label>
+                <label>Email  </label>
                 <input
                     type="email"
                     name="email"
@@ -94,7 +94,7 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Teléfono:</label>
+                <label>Teléfono  </label>
                 <input
                     type="tel"
                     name="phone"
@@ -104,7 +104,7 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Fecha de Nacimiento:</label>
+                <label>Fecha de Nacimiento  </label>
                 <input
                     type="date"
                     name="birth_date"
@@ -114,7 +114,7 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Nueva Foto de Perfil:</label>
+                <label>Nueva Foto de Perfil  </label>
                 <input
                     type="file"
                     name="avatar"
@@ -126,6 +126,7 @@ function EditMemberForm() {
             <div className="form-actions">
                 <button type="submit" className="btn btn-primary">
                     Guardar Cambios
+
                 </button>
                 <button 
                     type="button" 
@@ -133,6 +134,8 @@ function EditMemberForm() {
                     className="btn btn-secondary"
                 >
                     Cancelar
+
+                    
                 </button>
             </div>
         </form>

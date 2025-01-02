@@ -78,7 +78,7 @@ const EventForm = () => {
             {error && <div className="error-message">{error}</div>}
 
             <div className="form-group">
-                <label>Nombre del Evento:</label>
+                <label>Titulo  </label>
                 <input
                     type="text"
                     name="name"
@@ -89,7 +89,7 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Fecha:</label>
+                <label>Fecha  </label>
                 <input
                     type="date"
                     name="event_date"
@@ -100,14 +100,14 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Tipo de Evento:</label>
+                <label>Tipo de Evento  </label>
                 <select
                     name="event_type"
                     value={formData.event_type}
                     onChange={handleChange}
                     required
                 >
-                    <option value="">Seleccionar tipo</option>
+                    <option value="">  Seleccionar</option>
                     {EVENT_TYPES.map(type => (
                         <option key={type.value} value={type.value}>
                             {type.label}
@@ -117,7 +117,7 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Miembros:</label>
+                <label> Miembros    </label>
                 <select
                     multiple
                     name="selectedMembers"
@@ -131,11 +131,11 @@ const EventForm = () => {
                         </option>
                     ))}
                 </select>
-                <small>Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples miembros</small>
+               
             </div>
 
             <div className="form-group">
-                <label>Icono:</label>
+                <label>Icono  </label>
                 <select
                     name="icon"
                     value={formData.icon}
@@ -151,7 +151,7 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Color:</label>
+                <label>Color  </label>
                 <input
                     type="color"
                     name="color"
@@ -161,7 +161,7 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Imagen:</label>
+                <label>Imagen  </label>
                 <input
                     type="file"
                     name="image"

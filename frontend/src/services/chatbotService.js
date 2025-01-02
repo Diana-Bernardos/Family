@@ -1,10 +1,13 @@
-// src/services/chatbotService.js
+// frontend/src/services/chatbotService.js
 import { api } from './api';
 
 export const chatbotService = {
     sendMessage: async (userId, message) => {
         try {
             const response = await api.sendChatMessage(userId, message);
+            if (!response.success) {
+                throw new Error(response.error || 'Error al enviar mensaje');
+            }
             return response;
         } catch (error) {
             console.error('Error in chatbot service:', error);
@@ -22,13 +25,15 @@ export const chatbotService = {
         }
     },
 
-    getSuggestions: async (userId) => {
+    getHistory: async (userId) => {
         try {
-            const response = await api.getChatSuggestions(userId);
+            const response = await api.getChatHistory(userId);
             return response.data;
         } catch (error) {
-            console.error('Error getting suggestions:', error);
+            console.error('Error getting history:', error);
             return [];
         }
     }
 };
+
+export default chatbotService;

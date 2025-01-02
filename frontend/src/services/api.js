@@ -127,41 +127,54 @@ export const api = {
 
     // Métodos de ChatBot
     sendChatMessage: async (userId, message) => {
-        return api.authenticatedRequest(`${API_URL}/ai/process`, {
-            method: 'POST',
-            body: JSON.stringify({ userId, message }),
-        });
+        try {
+            const response = await fetch(`${API_URL}/ai/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId, message })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al enviar mensaje');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
     },
 
     getChatContext: async (userId) => {
-        return api.authenticatedRequest(`${API_URL}/ai/context/${userId}`);
+        try {
+            const response = await fetch(`${API_URL}/ai/context/${userId}`);
+            
+            if (!response.ok) {
+                throw new Error('Error al obtener contexto');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            throw error;
+        }
     },
 
-    getChatSuggestions: async (userId) => {
-        return api.authenticatedRequest(`${API_URL}/ai/suggestions/${userId}`);
-    },
 
     getChatHistory: async (userId) => {
-        return api.authenticatedRequest(`${API_URL}/ai/history/${userId}`);
-    },
-
-    getChatCalendarData: async (userId) => {
-        const [events, members, tasks, reminders] = await Promise.all([
-            api.getEvents(),
-            api.getMembers(),
-            api.getTasks(userId),
-            api.getReminders(userId),
-        ]);
-
-        return { events, members, tasks, reminders };
-    },
-
-    // Tareas y Recordatorios
-    getTasks: async (userId) => {
-        return api.authenticatedRequest(`${API_URL}/tasks/${userId}`);
-    },
-
-    getReminders: async (userId) => {
-        return api.authenticatedRequest(`${API_URL}/reminders/${userId}`);
-    },
-};
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/ai/history/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al obtener historial');
+        }
+    
+        return response.json();
+    }};

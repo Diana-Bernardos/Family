@@ -3,6 +3,8 @@ const router = express.Router();
 const pool = require('../config/database');
 const axios = require('axios');
 const config = require('../config/config');
+const ChatService = require('../services/chatService');
+
 
 // Análisis de intenciones
 const intents = {
@@ -225,52 +227,43 @@ async function getAIResponse(query, context) {
     }
 }
 
+// Procesar mensajes del chat
 router.post('/process', async (req, res) => {
-    const { message, userId } = req.body;
-
+    const { userId, message } = req.body;
+    
     try {
-        // Validar entrada
-        if (!message || typeof message !== 'string' || message.length > 500) {
-            throw new Error('Mensaje inválido');
+        console.log('Received request:', { userId, message });
+        
+        if (!userId || !message) {
+            return res.status(400).json({
+                success: false,
+                error: 'UserId y mensaje son requeridos'
+            });
         }
 
-        // Obtener todos los datos relevantes
-        const [events, members, tasks, reminders, calendarEvents] = 
-            await Promise.all([
-                getRelevantEvents(),
-                getRelevantMembers(),
-                getTasks(userId),
-                getReminders(userId),
-                getCalendarEvents()
-            ]);
-
-        const context = {
-            events,
-            members,
-            tasks,
-            reminders,
-            calendarEvents
-        };
-
-        const aiResponse = await getAIResponse(message.trim(), context);
-
-        // Guardar la interacción
-        await pool.query(
-            'INSERT INTO chat_interactions (user_id, message, response, context, intent, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-            [userId, message, aiResponse.response, JSON.stringify(context), aiResponse.intent]
-        );
-
-        res.json({
-            success: true,
-            response: aiResponse.response,
-            context: context,
-            intent: aiResponse.intent
-        });
+        const result = await ChatService.sendMessage(userId, message);
+        
+        res.json(result);
     } catch (error) {
-        console.error('Error processing message:', error);
-        res.status(500).json({ 
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
             error: 'Error al procesar el mensaje',
-            details: error.message 
+            details: error.message
+        });
+    }
+});
+
+router.get('/context/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const context = await ChatService.getFullContext(userId);
+        res.json({ success: true, data: context });
+    } catch (error) {
+        console.error('Error getting context:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener contexto'
         });
     }
 });
