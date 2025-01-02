@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../src/context/AuthContext';
-import { ChatContextProvider } from './services/contextService';
+import { ChatContextProvider } from './services/chatService';
 
 import Login from './components/Login';
 import Register from './components/Register';

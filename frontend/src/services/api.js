@@ -1,275 +1,167 @@
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 export const api = {
+    // Reutilizar headers comunes
+    async authenticatedRequest(url, options = {}) {
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            ...options.headers,
+        };
+
+        const response = await fetch(url, { ...options, headers });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error en la solicitud');
+        }
+
+        return response.json();
+    },
+
     // Eventos
     getEvents: async () => {
-        try {
-            const response = await fetch(`${API_URL}/events`);
-            if (!response.ok) throw new Error('Error al obtener eventos');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/events`);
     },
 
     getEvent: async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/events/${id}`);
-            if (!response.ok) throw new Error('Error al obtener evento');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/events/${id}`);
     },
 
     createEvent: async (eventData) => {
-        try {
-            const response = await fetch(`${API_URL}/events`, {
-                method: 'POST',
-                body: eventData
-            });
-            if (!response.ok) throw new Error('Error al crear evento');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/events`, {
+            method: 'POST',
+            body: JSON.stringify(eventData),
+        });
     },
 
     updateEvent: async (id, eventData) => {
-        try {
-            const response = await fetch(`${API_URL}/events/${id}`, {
-                method: 'PUT',
-                body: eventData
-            });
-            if (!response.ok) throw new Error('Error al actualizar evento');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/events/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(eventData),
+        });
     },
 
     deleteEvent: async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/events/${id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Error al eliminar evento');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/events/${id}`, { method: 'DELETE' });
     },
 
     // Miembros
     getMembers: async () => {
-        try {
-            const response = await fetch(`${API_URL}/members`);
-            if (!response.ok) throw new Error('Error al obtener miembros');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/members`);
     },
 
     getMember: async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/members/${id}`);
-            if (!response.ok) throw new Error('Error al obtener miembro');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    },
-
-    getMemberEvents: async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/members/${id}/events`);
-            if (!response.ok) throw new Error('Error al obtener eventos del miembro');
-            return await response.json();
-        } catch (error) {
-            console.error('Error detallado:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/members/${id}`);
     },
 
     createMember: async (memberData) => {
-        try {
-            const response = await fetch(`${API_URL}/members`, {
-                method: 'POST',
-                body: memberData
-            });
-            if (!response.ok) throw new Error('Error al crear miembro');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/members`, {
+            method: 'POST',
+            body: JSON.stringify(memberData),
+        });
     },
 
     updateMember: async (id, memberData) => {
-        try {
-            const response = await fetch(`${API_URL}/members/${id}`, {
-                method: 'PUT',
-                body: memberData
-            });
-            if (!response.ok) throw new Error('Error al actualizar miembro');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/members/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(memberData),
+        });
     },
 
     deleteMember: async (id) => {
-        try {
-            const response = await fetch(`${API_URL}/members/${id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Error al eliminar miembro');
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        return api.authenticatedRequest(`${API_URL}/members/${id}`, { method: 'DELETE' });
+    },
+
+    getMemberEvents: async (id) => {
+        return api.authenticatedRequest(`${API_URL}/members/${id}/events`);
     },
 
     // Documentos
     uploadDocument: async (memberId, file) => {
-        try {
-            const formData = new FormData();
-            formData.append('document', file);
+        const formData = new FormData();
+        formData.append('document', file);
 
-            const response = await fetch(`${API_URL}/documents/${memberId}/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error al subir documento');
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error en uploadDocument:', error);
-            throw error;
-        }
-    },
-
-    getMemberDocuments: async (memberId) => {
-        try {
-            const response = await fetch(`${API_URL}/documents/${memberId}/documents`);
-            if (!response.ok) throw new Error('Error al obtener documentos');
-            return await response.json();
-        } catch (error) {
-            console.error('Error en getMemberDocuments:', error);
-            throw error;
-        }
-    },
-
-
-    downloadDocument: async (documentId) => {
-        try {
-            const response = await fetch(`${API_URL}/documents/download/${documentId}`);
-            if (!response.ok) {
-                throw new Error('Error al descargar documento');
-            }
-            return await response.blob();
-        } catch (error) {
-            console.error('Error en downloadDocument:', error);
-            throw error;
-        }
-    },
-
-    deleteDocument: async (documentId) => {
-        try {
-            const response = await fetch(`${API_URL}/documents/${documentId}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) {
-                throw new Error('Error al eliminar documento');
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error en deleteDocument:', error);
-            throw error;
-        }
-    },
-
-
-    // METODOS AUTENTICACION
-
-    login: async (email, password) => {
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error en login:', error);
-            throw error;
-        }
-    },
-
-    register: async (username, email, password) => {
-        try {
-            const response = await fetch(`${API_URL}/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, email, password })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error en registro:', error);
-            throw error;
-        }
-    },
-
-    // Función auxiliar para hacer peticiones autenticadas
-    authenticatedRequest: async (url, options = {}) => {
-        const token = localStorage.getItem('token');
-        
-        const headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${token}`
-        };
-
-        const response = await fetch(url, {
-            ...options,
-            headers
+        const response = await fetch(`${API_URL}/documents/${memberId}/upload`, {
+            method: 'POST',
+            body: formData,
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error);
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Error al subir documento');
         }
 
         return response.json();
-    }
-}
+    },
 
+    getMemberDocuments: async (memberId) => {
+        return api.authenticatedRequest(`${API_URL}/documents/${memberId}/documents`);
+    },
+
+    downloadDocument: async (documentId) => {
+        const response = await fetch(`${API_URL}/documents/download/${documentId}`);
+        if (!response.ok) throw new Error('Error al descargar documento');
+        return response.blob();
+    },
+
+    deleteDocument: async (documentId) => {
+        return api.authenticatedRequest(`${API_URL}/documents/${documentId}`, { method: 'DELETE' });
+    },
+
+    // Autenticación
+    login: async (email, password) => {
+        return api.authenticatedRequest(`${API_URL}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify({ email, password }),
+        });
+    },
+
+    register: async (username, email, password) => {
+        return api.authenticatedRequest(`${API_URL}/auth/register`, {
+            method: 'POST',
+            body: JSON.stringify({ username, email, password }),
+        });
+    },
+
+    // Métodos de ChatBot
+    sendChatMessage: async (userId, message) => {
+        return api.authenticatedRequest(`${API_URL}/ai/process`, {
+            method: 'POST',
+            body: JSON.stringify({ userId, message }),
+        });
+    },
+
+    getChatContext: async (userId) => {
+        return api.authenticatedRequest(`${API_URL}/ai/context/${userId}`);
+    },
+
+    getChatSuggestions: async (userId) => {
+        return api.authenticatedRequest(`${API_URL}/ai/suggestions/${userId}`);
+    },
+
+    getChatHistory: async (userId) => {
+        return api.authenticatedRequest(`${API_URL}/ai/history/${userId}`);
+    },
+
+    getChatCalendarData: async (userId) => {
+        const [events, members, tasks, reminders] = await Promise.all([
+            api.getEvents(),
+            api.getMembers(),
+            api.getTasks(userId),
+            api.getReminders(userId),
+        ]);
+
+        return { events, members, tasks, reminders };
+    },
+
+    // Tareas y Recordatorios
+    getTasks: async (userId) => {
+        return api.authenticatedRequest(`${API_URL}/tasks/${userId}`);
+    },
+
+    getReminders: async (userId) => {
+        return api.authenticatedRequest(`${API_URL}/reminders/${userId}`);
+    },
+};

@@ -1,104 +1,92 @@
-// src/components/FloatingChat.jsx
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
-import { MessageCircle, X } from 'lucide-react';
-import '../styles/FloatingChat.css';
-import ChatService from '../services/chatService';
-import { useChatContext } from '../services/contextService';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { MessageCircle, X, Send } from 'lucide-react';
+import { useChatContext } from '../services/chatService';
 import { useAuth } from '../context/AuthContext';
+import '../styles/FloatingChat.css';
 
-const FloatingChat = memo(() => {
+const FloatingChat = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const chatBoxRef = useRef(null);
 
-    const { context, loadContext } = useChatContext();
+    const { context, loadContext, sendMessage, getSuggestions } = useChatContext();
     const { user } = useAuth();
 
+    // Cargar contexto al abrir chat
     useEffect(() => {
-        if (user && user.id) {
+        if (user?.id && isOpen) {
             loadContext(user.id);
         }
-    }, [loadContext, user]);
+    }, [user, isOpen, loadContext]);
 
-    // Optimized scroll to bottom effect
-   
-
+    // Auto-scroll a últimos mensajes
     const scrollToBottom = useCallback(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, []);
-    
+
     useEffect(() => {
-      scrollToBottom();
+        scrollToBottom();
     }, [messages, scrollToBottom]);
 
-    // Memoized send handler with improved error handling
+    // Manejar envío de mensajes
     const handleSend = useCallback(async () => {
         const trimmedMessage = inputMessage.trim();
-        
-        if (!trimmedMessage) return;
-
-        const userMessage = { 
-            id: Date.now(), 
-            type: 'user', 
-            content: trimmedMessage 
-        };
+        if (!trimmedMessage || isLoading) return;
 
         try {
             setIsLoading(true);
+            
+            // Agregar mensaje del usuario
+            const userMessage = {
+                id: Date.now(),
+                type: 'user',
+                content: trimmedMessage
+            };
             setMessages(prev => [...prev, userMessage]);
             setInputMessage('');
 
-            const response = await fetch('http://localhost:3001/api/assistant/query', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: trimmedMessage,
-                    type: 'general'
-                }),
-                timeout: 10000
-            });
+            // Obtener respuesta del asistente
+            const response = await sendMessage(user.id, trimmedMessage);
 
-            if (!response.ok) {
-                throw new Error('The request could not be processed');
-            }
-
-            const data = await response.json();
-            
-            const assistantMessage = { 
-                id: Date.now() + 1, 
-                type: 'assistant', 
-                content: data.response || 'The response could not be processed'
+            // Agregar respuesta del asistente
+            const assistantMessage = {
+                id: Date.now() + 1,
+                type: 'assistant',
+                content: response.response
             };
-
             setMessages(prev => [...prev, assistantMessage]);
+
+            // Obtener nuevas sugerencias
+            await getSuggestions(user.id);
+
         } catch (error) {
             console.error('Chat error:', error);
-            
-            const errorMessage = { 
-                id: Date.now() + 2, 
-                type: 'error', 
-                content: error.message || 'An error occurred while processing the message'
-            };
-
-            setMessages(prev => [...prev, errorMessage]);
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                type: 'error',
+                content: 'Error al procesar el mensaje'
+            }]);
         } finally {
             setIsLoading(false);
             inputRef.current?.focus();
         }
-    }, [inputMessage]);
-
-    const handleInputChange = useCallback((e) => {
-        setInputMessage(e.target.value);
-    }, []);
+    }, [inputMessage, isLoading, sendMessage, getSuggestions, user]);
 
     const handleSubmit = useCallback((e) => {
         e.preventDefault();
         handleSend();
+    }, [handleSend]);
+
+    const handleKeyPress = useCallback((e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
     }, [handleSend]);
 
     return (
@@ -106,46 +94,46 @@ const FloatingChat = memo(() => {
             <button 
                 className="chat-toggle-button"
                 onClick={() => setIsOpen(!isOpen)}
-                title={isOpen ? "Close chat" : "Open chat"}
-                aria-label={isOpen ? "Close chat" : "Open chat"}
+                title={isOpen ? "Cerrar chat" : "Abrir chat"}
+                aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
             >
-                {isOpen ? (
-                    <X className="icon" aria-hidden="true" />
-                ) : (
-                    <MessageCircle className="icon" aria-hidden="true" />
-                )}
+                {isOpen ? <X className="icon" /> : <MessageCircle className="icon" />}
             </button>
 
             {isOpen && (
                 <div className="chat-window" role="dialog" aria-labelledby="chat-header">
                     <div className="chat-header" id="chat-header">
-                        <h5>Family Assistant</h5>
-                        <button 
-                            type="button" 
-                            className="close-button"
-                            onClick={() => setIsOpen(false)}
-                            aria-label="Close chat"
-                        >
-                           
-                        </button>
+                        <h5>Asistente Familiar</h5>
+                        {context?.suggestions?.length > 0 && (
+                            <div className="suggestion-count">
+                                {context.suggestions.length} sugerencias
+                            </div>
+                        )}
                     </div>
 
-                    <div className="chat-messages" aria-live="polite">
+                    <div className="chat-messages" ref={chatBoxRef}>
+                        {context?.suggestions?.map((suggestion, index) => (
+                            <div key={`suggestion-${index}`} className="suggestion-message">
+                                {suggestion}
+                            </div>
+                        ))}
+                        
                         {messages.map((message) => (
                             <div
                                 key={message.id}
-                                className={`message-wrapper ${message.type === 'user' ? 'user' : ''}`}
+                                className={`message-wrapper ${message.type}`}
                             >
-                                <div className={`message ${message.type}`}>
+                                <div className="message">
                                     <div className="message-content">
                                         {message.content}
                                     </div>
                                 </div>
                             </div>
                         ))}
+                        
                         {isLoading && (
                             <div className="message-wrapper">
-                                <div className="message">
+                                <div className="message assistant">
                                     <div className="message-content typing">
                                         <div className="typing-indicator">
                                             <span></span>
@@ -159,42 +147,33 @@ const FloatingChat = memo(() => {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    <div className="chat-footer">
-                        <form 
-                            onSubmit={handleSubmit}
-                            className="chat-form"
-                            role="form"
+                    <form 
+                        onSubmit={handleSubmit}
+                        className="chat-footer"
+                    >
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={inputMessage}
+                            onChange={(e) => setInputMessage(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            placeholder="Escribe un mensaje..."
+                            disabled={isLoading}
+                            className="chat-input"
+                            maxLength={500}
+                        />
+                        <button
+                            type="submit"
+                            disabled={isLoading || !inputMessage.trim()}
+                            className="send-button"
                         >
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                className="chat-input"
-                                id="chat-input"
-                                name="chat-input"
-                                value={inputMessage}
-                                onChange={handleInputChange}
-                                placeholder="Enter your message here..."
-                                disabled={isLoading}
-                                autoComplete="off"
-                                aria-label="Chat message"
-                                maxLength={500}
-                            />
-                            <button
-                                type="submit"
-                                className="send-button"
-                                disabled={isLoading || !inputMessage.trim()}
-                                aria-label="Send message"
-                            >
-                                Send
-                            </button>
-                        </form>
-                    </div>
+                            <Send size={20} />
+                        </button>
+                    </form>
                 </div>
             )}
         </div>
     );
-});
-
-FloatingChat.displayName = 'FloatingChat';
+};
 
 export default FloatingChat;

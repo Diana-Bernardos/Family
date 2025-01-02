@@ -4,15 +4,39 @@ const pool = require('../config/database');
 const axios = require('axios');
 const config = require('../config/config');
 
+// Análisis de intenciones
+const intents = {
+    calendar: ['evento', 'calendario', 'fecha', 'cuando', 'programado'],
+    members: ['miembro', 'familia', 'quien', 'contacto'],
+    tasks: ['tarea', 'pendiente', 'hacer', 'completar'],
+    reminders: ['recordatorio', 'recordar', 'avisar']
+};
+
+function analyzeIntent(query) {
+    query = query.toLowerCase();
+    for (const [intent, keywords] of Object.entries(intents)) {
+        if (keywords.some(keyword => query.includes(keyword))) {
+            return intent;
+        }
+    }
+    return 'general';
+}
+
+// Funciones de obtención de datos
 async function getRelevantEvents(userId) {
     try {
         const [events] = await pool.query(`
-            SELECT e.* 
+            SELECT e.*, em.member_id,
+                   COALESCE(m.name, 'Sin asignar') as member_name,
+                   e.event_type,
+                   e.color,
+                   e.icon
             FROM events e
             LEFT JOIN event_members em ON e.id = em.event_id
-            WHERE em.member_id = ? AND e.event_date >= CURDATE()
+            LEFT JOIN members m ON em.member_id = m.id
+            WHERE e.event_date >= CURDATE()
             ORDER BY e.event_date ASC
-        `, [userId]);
+        `);
         return events;
     } catch (error) {
         console.error('Error getting events:', error);
@@ -20,9 +44,16 @@ async function getRelevantEvents(userId) {
     }
 }
 
-async function getRelevantMembers(userId) {
+async function getRelevantMembers() {
     try {
-        const [members] = await pool.query('SELECT * FROM members WHERE id != ?', [userId]);
+        const [members] = await pool.query(`
+            SELECT m.*, 
+                   COUNT(e.id) as total_events
+            FROM members m
+            LEFT JOIN event_members em ON m.id = em.member_id
+            LEFT JOIN events e ON em.event_id = e.id
+            GROUP BY m.id
+        `);
         return members;
     } catch (error) {
         console.error('Error getting members:', error);
@@ -30,50 +61,163 @@ async function getRelevantMembers(userId) {
     }
 }
 
-async function getUserPreferences(userId) {
+async function getTasks(userId) {
     try {
-        const [preferences] = await pool.query('SELECT * FROM user_preferences WHERE user_id = ?', [userId]);
-        return preferences[0] || {};
-    } catch (error) {
-        console.error('Error getting preferences:', error);
-        return {};
-    }
-}
-
-async function getSearchHistory(userId) {
-    try {
-        const [history] = await pool.query(`
-            SELECT * FROM chat_interactions 
+        const [tasks] = await pool.query(`
+            SELECT t.*, 
+                   DATEDIFF(t.due_date, CURDATE()) as days_remaining
+            FROM tasks t
             WHERE user_id = ? 
-            ORDER BY created_at DESC 
-            LIMIT 10
+            AND completed = FALSE
+            ORDER BY due_date ASC
         `, [userId]);
-        return history;
+        return tasks;
     } catch (error) {
-        console.error('Error getting history:', error);
+        console.error('Error getting tasks:', error);
         return [];
     }
 }
 
+async function getReminders(userId) {
+    try {
+        const [reminders] = await pool.query(`
+            SELECT r.*,
+                   e.name as event_name
+            FROM reminders r
+            LEFT JOIN events e ON r.event_id = e.id
+            WHERE r.user_id = ? 
+            AND r.status = 'active'
+            ORDER BY reminder_date ASC
+        `, [userId]);
+        return reminders;
+    } catch (error) {
+        console.error('Error getting reminders:', error);
+        return [];
+    }
+}
+
+async function getCalendarEvents() {
+    try {
+        const [calendarEvents] = await pool.query(`
+            SELECT ce.*,
+                   COUNT(r.id) as reminder_count
+            FROM calendar_events ce
+            LEFT JOIN reminders r ON ce.id = r.event_id
+            WHERE ce.event_date >= CURDATE()
+            GROUP BY ce.id
+            ORDER BY ce.event_date ASC
+        `);
+        return calendarEvents;
+    } catch (error) {
+        console.error('Error getting calendar events:', error);
+        return [];
+    }
+}
+
+function formatDate(date) {
+    return new Date(date).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+function createPrompt(query, context, intent) {
+    const { events, members, tasks, reminders } = context;
+    
+    // Formatear datos según la intención
+    let relevantData = '';
+    switch (intent) {
+        case 'calendar':
+            relevantData = formatCalendarData(events, reminders);
+            break;
+        case 'members':
+            relevantData = formatMembersData(members, events);
+            break;
+        case 'tasks':
+            relevantData = formatTasksData(tasks);
+            break;
+        case 'reminders':
+            relevantData = formatRemindersData(reminders);
+            break;
+        default:
+            relevantData = formatAllData(context);
+    }
+
+    return `Eres un asistente especializado para nuestra aplicación de organización familiar.
+
+${relevantData}
+
+CAPACIDADES:
+1. Gestionar el calendario familiar y eventos
+2. Administrar información de miembros de la familia
+3. Manejar tareas y recordatorios
+4. Ayudar con la organización familiar
+5. Proporcionar información sobre eventos próximos
+6. Mostrar detalles de los miembros
+
+INSTRUCCIONES:
+- Usa solo la información proporcionada arriba
+- Da respuestas específicas sobre esta familia
+- Mantén un tono amigable y personal
+- Proporciona fechas en formato legible
+- Sugiere acciones relevantes basadas en el contexto
+- Si no tienes cierta información, indícalo claramente
+
+CONSULTA DEL USUARIO: ${query}`;
+}
+
+function formatAllData(context) {
+    const { events, members, tasks, reminders } = context;
+    
+    return `
+DATOS ACTUALES DE LA FAMILIA:
+
+EVENTOS PRÓXIMOS:
+${events.map(event => `- ${event.name} (${formatDate(event.event_date)})
+  Asignado a: ${event.member_name}
+  Tipo: ${event.event_type || 'No especificado'}
+  ${event.icon ? `Icono: ${event.icon}` : ''}`).join('\n')}
+
+MIEMBROS DE LA FAMILIA:
+${members.map(member => `- ${member.name}
+  Email: ${member.email || 'No especificado'}
+  Teléfono: ${member.phone || 'No especificado'}
+  Eventos asociados: ${member.total_events || 0}`).join('\n')}
+
+TAREAS PENDIENTES:
+${tasks.map(task => `- ${task.title}
+  Vence en: ${task.days_remaining} días
+  Prioridad: ${task.priority || 'Normal'}`).join('\n')}
+
+RECORDATORIOS ACTIVOS:
+${reminders.map(reminder => `- ${reminder.title}
+  Fecha: ${formatDate(reminder.reminder_date)}
+  ${reminder.event_name ? `Para evento: ${reminder.event_name}` : ''}`).join('\n')}`;
+}
+
 async function getAIResponse(query, context) {
     try {
-        const prompt = createPrompt(query, context);
+        const intent = analyzeIntent(query);
+        const prompt = createPrompt(query, context, intent);
         
         const response = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
             model: config.MODEL_NAME,
             prompt: prompt,
             options: {
-                temperature: 0.7,
-                top_k: 50,
-                top_p: 0.95,
+                temperature: 0.3,
+                top_k: 10,
+                top_p: 0.9,
                 num_ctx: 2048,
-                repeat_penalty: 1.1
+                repeat_penalty: 1.2
             }
         });
 
         return {
             response: response.data.response,
-            context: context
+            context: context,
+            intent: intent
         };
     } catch (error) {
         console.error('Error AI response:', error);
@@ -81,107 +225,51 @@ async function getAIResponse(query, context) {
     }
 }
 
-function createPrompt(query, context) {
-    const { events, members, tasks } = context;
-    
-    return `Eres un asistente específico para la aplicación de organización familiar.
-    
-    DATOS DISPONIBLES:
-    ${events ? `Eventos: ${JSON.stringify(events)}` : 'No hay eventos'}
-    ${members ? `Miembros: ${JSON.stringify(members)}` : 'No hay miembros'}
-    ${tasks ? `Tareas: ${JSON.stringify(tasks)}` : 'No hay tareas'}
-
-    FUNCIONES PERMITIDAS:
-    - Gestionar eventos del calendario familiar
-    - Mostrar información de miembros
-    - Administrar tareas familiares
-    - Consultar recordatorios
-    
-    RESTRICCIONES:
-    - Solo responde sobre la aplicación familiar
-    - No des información general
-    - No contestes preguntas no relacionadas
-    - Usa solo los datos proporcionados
-    
-    Consulta: ${query}`;
-}
-
-async function saveToHistory(userId, query, aiResponse) {
-    try {
-        await pool.query(
-            'INSERT INTO chat_interactions (user_id, message, response, created_at) VALUES (?, ?, ?, NOW())',
-            [userId, query, aiResponse.response]
-        );
-    } catch (error) {
-        console.error('Error saving history:', error);
-    }
-}
-
-router.post('/analyze', async (req, res) => {
-    const { userId, query } = req.body;
-    
-    try {
-        const [events, members, history, userPreferences] = await Promise.all([
-            getRelevantEvents(userId),
-            getRelevantMembers(userId),
-            getSearchHistory(userId),
-            getUserPreferences(userId)
-        ]);
-
-        const aiContext = {
-            events,
-            members,
-            history,
-            userPreferences
-        };
-
-        const aiResponse = await getAIResponse(query, aiContext);
-        await saveToHistory(userId, query, aiResponse);
-
-        res.json(aiResponse);
-    } catch (error) {
-        console.error('Error in AI analysis:', error);
-        res.status(500).json({ 
-            error: 'Analysis error',
-            details: error.message 
-        });
-    }
-});
-
 router.post('/process', async (req, res) => {
     const { message, userId } = req.body;
 
     try {
-        const [events] = await pool.query(
-            'SELECT * FROM events WHERE event_date >= CURDATE() ORDER BY event_date ASC'
-        );
+        // Validar entrada
+        if (!message || typeof message !== 'string' || message.length > 500) {
+            throw new Error('Mensaje inválido');
+        }
 
-        const [members] = await pool.query('SELECT * FROM members');
+        // Obtener todos los datos relevantes
+        const [events, members, tasks, reminders, calendarEvents] = 
+            await Promise.all([
+                getRelevantEvents(),
+                getRelevantMembers(),
+                getTasks(userId),
+                getReminders(userId),
+                getCalendarEvents()
+            ]);
 
-        const ollamaResponse = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
-            model: config.MODEL_NAME,
-            prompt: createPrompt(message, { events, members, history: [], userPreferences: {} }),
-            options: {
-                temperature: 0.3, // Más bajo para respuestas más precisas
-                top_p: 0.1,      // Más restrictivo
-                num_ctx: 2048
-            }
-        });
+        const context = {
+            events,
+            members,
+            tasks,
+            reminders,
+            calendarEvents
+        };
 
+        const aiResponse = await getAIResponse(message.trim(), context);
+
+        // Guardar la interacción
         await pool.query(
-            'INSERT INTO chat_interactions (user_id, message, response, context, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [userId, message, ollamaResponse.data.response, JSON.stringify({ events, members })]
+            'INSERT INTO chat_interactions (user_id, message, response, context, intent, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+            [userId, message, aiResponse.response, JSON.stringify(context), aiResponse.intent]
         );
 
         res.json({
             success: true,
-            response: ollamaResponse.data.response,
-            context: { events, members }
+            response: aiResponse.response,
+            context: context,
+            intent: aiResponse.intent
         });
     } catch (error) {
         console.error('Error processing message:', error);
         res.status(500).json({ 
-            error: 'Processing error',
+            error: 'Error al procesar el mensaje',
             details: error.message 
         });
     }

@@ -1,73 +1,68 @@
-import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
+// src/services/chatService.js
+import React, { createContext, useState, useContext, useCallback } from 'react';
+import { chatbotService } from './chatbotService';
 
-class ChatService {
-    constructor() {
-        this.messageCache = new Map();
-        this.MAX_CACHE_SIZE = 50;
-    }
+const ChatContext = createContext(null);
 
-    async sendMessage(userId, message) {
-        const requestId = uuidv4();
-        
-        if (this.messageCache.size >= this.MAX_CACHE_SIZE) {
-            const oldestKey = this.messageCache.keys().next().value;
-            this.messageCache.delete(oldestKey);
-        }
-
-        const userMessage = {
-            id: requestId,
-            text: message,
-            sender: 'user',
-            timestamp: Date.now(),
-        };
-
-        this.messageCache.set(requestId, userMessage);
-
+export const ChatContextProvider = ({ children }) => {
+    const [context, setContext] = useState({
+        events: [],
+        members: [],
+        tasks: [],
+        reminders: [],
+        chatHistory: [],
+        suggestions: []
+    });
+    const sendMessage = useCallback(async (userId, message) => {
         try {
-            const response = await axios.post('/api/assistant/query', {
-                userId,
-                query: message,
-                requestId,
-            }, {
-                timeout: 10000,
-                headers: {
-                    'X-Request-ID': requestId,
-                },
-            });
-
-            const aiMessage = {
-                id: response.data.responseId || uuidv4(),
-                text: response.data.response,
-                sender: 'ai',
-                timestamp: Date.now(),
-                context: response.data.context
-            };
-
-            this.messageCache.set(aiMessage.id, aiMessage);
-
-            return {
-                userMessage,
-                assistantMessage: aiMessage,
-            };
+            return await chatbotService.sendMessage(userId, message);
         } catch (error) {
-            console.error('Chat service error:', error);
-            return {
-                userMessage,
-                assistantMessage: {
-                    id: uuidv4(),
-                    text: 'Error processing your message',
-                    sender: 'error',
-                    timestamp: Date.now(),
-                }
-            };
+            console.error('Error sending message:', error);
+            throw error;
         }
-    }
+    }, []);
 
-    getCachedMessages() {
-        return Array.from(this.messageCache.values())
-            .sort((a, b) => a.timestamp - b.timestamp);
-    }
-}
+    const loadContext = useCallback(async (userId) => {
+        try {
+            const contextData = await chatbotService.getContext(userId);
+            if (contextData) {
+                setContext(prev => ({
+                    ...prev,
+                    ...contextData
+                }));
+            }
+        } catch (error) {
+            console.error('Error loading context:', error);
+        }
+    }, []);
 
-export default new ChatService();
+    const sendMessage = useCallback(async (userId, message) => {
+        try {
+            const response = await chatbotService.sendMessage(userId, message);
+            return response;
+        } catch (error) {
+            console.error('Error sending message:', error);
+            throw error;
+        }
+    }, []);
+
+    const value = {
+        context,
+        loadContext,
+        sendMessage
+    };
+
+    return (
+        <ChatContext.Provider value={value}>
+            {children}
+        </ChatContext.Provider>
+    );
+};
+
+export const useChatContext = () => {
+    const context = useContext(ChatContext);
+    if (!context) {
+        throw new Error('useChatContext must be used within a ChatContextProvider');
+    }
+    return context;
+};

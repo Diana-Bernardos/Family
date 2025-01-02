@@ -1,138 +1,152 @@
-// routes/assistant.js
+// backend/routes/assistant.js
+
+
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const config = require('../config/config');
 
-// This route handles requests to fetch the general context data for a user
-router.get('/context/:userId', async (req, res) => {
-    const { userId } = req.params;
-
-    // First, we check if the userId parameter is provided
-    if (!userId) {
-        return res.status(400).json({
-            success: false,
-            error: 'User ID is required'
-        });
-    }
-
+// Obtener contexto general
+router.get('/context', async (req, res) => {
     try {
-        // We fetch the relevant data in parallel, including events, members, reminders, tasks, and recommendations
-        const [events, members, reminders, tasks, recommendations] = await Promise.all([
-            getRelevantEvents(userId),
-            getRelevantMembers(userId),
-            getReminders(userId),
-            getTasks(userId),
-            getRecommendations(userId),
-            
+        // Obtener datos en paralelo
+        const [events, members] = await Promise.all([
+            pool.query(
+                `SELECT e.*, GROUP_CONCAT(m.name) as participants 
+                 FROM events e 
+                 LEFT JOIN event_members em ON e.id = em.event_id 
+                 LEFT JOIN members m ON em.member_id = m.id 
+                 WHERE e.event_date >= CURDATE() 
+                 GROUP BY e.id 
+                 ORDER BY e.event_date ASC`
+            ),
+            pool.query('SELECT id, name, email, phone, birth_date FROM members')
         ]);
 
-        // Then, we return the context data in a structured response
         res.json({
             success: true,
             data: {
-                events,
-                members,
-                reminders,
-                tasks,
-                recommendations
+                events: events[0] || [],
+                members: members[0] || []
             }
         });
     } catch (error) {
         console.error('Error getting context:', error);
-        
-        // If there's an error, we return a 500 status code and an error message
-        res.status(500).json({
+        res.status(500).json({ 
             success: false,
-            error: 'Error getting context'
+            error: 'Error al obtener el contexto'
         });
     }
 });
 
-// These are helper functions that fetch the relevant data from the database
-
-
-async function getRelevantEvents(userId) {
+// Procesar consulta
+router.post('/query', async (req, res) => {
     try {
-        // Here, we'd fetch the upcoming events for the given user
-        // We might use a query like:
-        // SELECT * FROM events WHERE event_date >= CURDATE() AND member_id = ?
-        const [events] = await pool.query(
-            'SELECT * FROM events WHERE event_date >= CURDATE() AND member_id = ?',
-            [userId]
-        );
-        return events;
+        const { query, type = 'general', memberId } = req.body;
+
+        if (!query) {
+            return res.status(400).json({
+                success: false,
+                error: 'La consulta es requerida'
+            });
+        }
+
+        let response;
+        switch (type) {
+            case 'calendar':
+                response = await processCalendarQuery(query, memberId);
+                break;
+            case 'members':
+                response = await processMemberQuery(query, memberId);
+                break;
+            case 'documents':
+                response = await processDocumentQuery(query, memberId);
+                break;
+            default:
+                response = await processGeneralQuery(query);
+        }
+
+        res.json({
+            success: true,
+            data: response
+        });
     } catch (error) {
-        console.error('Error fetching events:', error);
-        return [];
+        console.error('Error processing query:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error al procesar la consulta' 
+        });
     }
+});
+
+async function processCalendarQuery(query, memberId) {
+    const [events] = await pool.query(
+        `SELECT e.*, GROUP_CONCAT(m.name) as participants
+         FROM events e
+         LEFT JOIN event_members em ON e.id = em.event_id
+         LEFT JOIN members m ON em.member_id = m.id
+         WHERE e.event_date >= CURDATE()
+         ${memberId ? 'AND em.member_id = ?' : ''}
+         GROUP BY e.id
+         ORDER BY e.event_date ASC`,
+        memberId ? [memberId] : []
+    );
+
+    return {
+        type: 'calendar',
+        events: events || [],
+        summary: `Encontré ${events.length} eventos próximos.`
+    };
 }
 
+async function processMemberQuery(query, memberId) {
+    const [members] = await pool.query(
+        `SELECT m.*, 
+         (SELECT COUNT(*) FROM event_members em 
+          JOIN events e ON em.event_id = e.id 
+          WHERE em.member_id = m.id AND e.event_date >= CURDATE()) as upcoming_events
+         FROM members m
+         ${memberId ? 'WHERE m.id = ?' : ''}`,
+        memberId ? [memberId] : []
+    );
 
-
-async function getRelevantMembers(userId) {
-    try {
-        // Here, we'd fetch the members for the given user
-        // We might use a query like:
-        // SELECT * FROM members WHERE id != ?
-        const [members] = await pool.query(
-            'SELECT * FROM members WHERE id != ?',
-            [userId]
-        );
-        return members;
-    } catch (error) {
-        console.error('Error fetching members:', error);
-        return [];
-    }
+    return {
+        type: 'members',
+        members: members || [],
+        summary: `Información sobre ${members.length} miembro(s).`
+    };
 }
 
-async function getReminders(userId) {
-    try {
-        // Here, we'd fetch the reminders for the given user
-        // We might use a query like:
-        // SELECT * FROM reminders WHERE user_id = ?
-        const [reminders] = await pool.query(
-            'SELECT * FROM reminders WHERE user_id = ?',
-            [userId]
-        );
-        return reminders;
-    } catch (error) {
-        console.error('Error fetching reminders:', error);
-        return [];
-    }
+async function processDocumentQuery(query, memberId) {
+    const [documents] = await pool.query(
+        `SELECT md.*, m.name as member_name 
+         FROM member_documents md
+         JOIN members m ON md.member_id = m.id
+         ${memberId ? 'WHERE md.member_id = ?' : ''}
+         ORDER BY md.upload_date DESC`,
+        memberId ? [memberId] : []
+    );
+
+    return {
+        type: 'documents',
+        documents: documents || [],
+        summary: `Encontré ${documents.length} documentos.`
+    };
 }
 
-async function getTasks(userId) {
-    try {
-        // Here, we'd fetch the tasks for the given user
-        // We might use a query like:
-        // SELECT * FROM tasks WHERE user_id = ?
-        const [tasks] = await pool.query(
-            'SELECT * FROM tasks WHERE user_id = ?',
-            [userId]
-        );
-        return tasks;
-    } catch (error) {
-        console.error('Error fetching tasks:', error);
-        return [];
-    }
+async function processGeneralQuery(query) {
+    // Recopilar información general
+    const [eventCount] = await pool.query(
+        'SELECT COUNT(*) as count FROM events WHERE event_date >= CURDATE()'
+    );
+    const [memberCount] = await pool.query('SELECT COUNT(*) as count FROM members');
+
+    return {
+        type: 'general',
+        summary: `Tu familia tiene ${memberCount[0].count} miembros y ${eventCount[0].count} eventos próximos.`,
+        query: query
+    };
 }
 
-async function getRecommendations(userId) {
-    try {
-        // Here, we'd fetch the recommendations for the given user
-        // We might use a query like:
-        // SELECT * FROM recommendations WHERE user_id = ?
-        const [recommendations] = await pool.query(
-            'SELECT * FROM recommendations WHERE user_id = ?',
-            [userId]
-        );
-        return recommendations;
-    } catch (error) {
-        console.error('Error fetching recommendations:', error);
-        return [];
-    }
-}
-
-// Finally, we export the router
 module.exports = router;
