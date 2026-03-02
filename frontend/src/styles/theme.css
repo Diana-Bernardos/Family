@@ -1,92 +1,190 @@
 /* src/styles/theme.css */
 :root {
-    /* Paleta de colores del logo */
-    --peach: #FFE4D6;
-    --mint: #D8E7DC;
-    --sky: #E1EEF3;
-    --navy: #1F2937;
+    /* ==================== NUEVA PALETA DE COLORES ==================== */
+    
+    /* Almond Cream - Crema/Beige */
+    --almond-cream: #fae5d2;
+    --almond-cream-100: #532d09;
+    --almond-cream-200: #a55912;
+    --almond-cream-300: #e8872c;
+    --almond-cream-400: #f1b67e;
+    --almond-cream-500: #fae5d2;
+    --almond-cream-600: #fbeada;
+    --almond-cream-700: #fcefe3;
+    --almond-cream-800: #fdf5ed;
+    --almond-cream-900: #fefaf6;
+    
+    /* Dust Grey - Gris Polvo */
+    --dust-grey: #d1d0ce;
+    --dust-grey-100: #2b2a28;
+    --dust-grey-200: #555350;
+    --dust-grey-300: #807d78;
+    --dust-grey-400: #a8a6a3;
+    --dust-grey-500: #d1d0ce;
+    --dust-grey-600: #d9d9d7;
+    --dust-grey-700: #e3e2e1;
+    --dust-grey-800: #ececeb;
+    --dust-grey-900: #f6f5f5;
+    
+    /* Honeydew - Verde Menta */
+    --honeydew: #c9ddd1;
+    --honeydew-100: #213428;
+    --honeydew-200: #416851;
+    --honeydew-300: #629c79;
+    --honeydew-400: #96bda5;
+    --honeydew-500: #c9ddd1;
+    --honeydew-600: #d4e4db;
+    --honeydew-700: #dfebe4;
+    --honeydew-800: #eaf2ed;
+    --honeydew-900: #f4f8f6;
+    
+    /* Powder Petal - Naranja/Melocotón Pastel */
+    --powder-petal: #fce7d7;
+    --powder-petal-100: #572a07;
+    --powder-petal-200: #af530d;
+    --powder-petal-300: #ef802b;
+    --powder-petal-400: #f6b482;
+    --powder-petal-500: #fce7d7;
+    --powder-petal-600: #fdede1;
+    --powder-petal-700: #fdf1e8;
+    --powder-petal-800: #fef6f0;
+    --powder-petal-900: #fefaf7;
+    
+    /* Powder Blue - Azul Pastel */
+    --powder-blue: #a9c5db;
+    --powder-blue-100: #172937;
+    --powder-blue-200: #2e526d;
+    --powder-blue-300: #457ba4;
+    --powder-blue-400: #72a1c4;
+    --powder-blue-500: #a9c5db;
+    --powder-blue-600: #bad1e2;
+    --powder-blue-700: #cbdce9;
+    --powder-blue-800: #dce8f1;
+    --powder-blue-900: #eef3f8;
+    
+    /* ==================== COLORES DERIVADOS (usando la paleta) ==================== */
+    /* Paleta de colores principal - actualizada */
+    --primary-color: var(--powder-blue-500);
+    --primary-dark: var(--powder-blue-300);
+    --secondary-color: var(--honeydew-500);
+    --accent-color: var(--powder-petal-300);
+    
+    /* Paleta suave del logo */
+    --peach: var(--almond-cream-500);
+    --mint: var(--honeydew-500);
+    --sky: var(--powder-blue-800);
+    --navy: var(--dust-grey-100);    
+    /* Colores de texto - actualizados */
+    --text-primary: var(--dust-grey-100);
+    --text-secondary: var(--dust-grey-300);
+    --text-muted: var(--dust-grey-400);
+    --text-light: var(--dust-grey-600);
 
-    /* Sistema de colores */
-    --primary: var(--navy);
-    --secondary: var(--peach);
-    --accent: var(--mint);
-    --danger: #dc3545;
-
-    /* Mejoras en colores de texto */
-    --text-primary: #1F2937;
-    --text-secondary: #4B5563;
-    --text-muted: #6B7280;
-
-    /* Fondos */
+    /* Fondos y bordes - actualizados */
     --bg-primary: #FFFFFF;
-    --bg-secondary: var(--peach);
-    --bg-accent: var(--mint);
-    --bg-light: var(--sky);
-    --border-color: #e2e8f0;
-    --border-radius: 8px;
-
-    /* Gradiente de fondo */
-    --bg-gradient: linear-gradient(135deg, var(--sky) 0%, var(--mint) 50%, var(--peach) 100%);
-
+    --bg-secondary: var(--almond-cream-900);
+    --bg-tertiary: var(--honeydew-900);
+    --bg-light-gradient: linear-gradient(135deg, var(--almond-cream-900) 0%, var(--powder-blue-900) 100%);
+    --bg-card: #FFFFFF;
+    --border-color: var(--dust-grey-700);
+    --border-color-light: var(--honeydew-800);
+    
     /* Sombras */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
 
     /* Espaciados */
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
     --spacing-lg: 2rem;
+    --spacing-xl: 2.5rem;
 
     /* Border radius */
-    --border-radius: 10px;
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+
+    /* Transiciones */
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background: var(--bg-gradient);
+    background: var(--bg-light-gradient);
     min-height: 100vh;
     color: var(--text-primary);
     line-height: 1.6;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: var(--navy);
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+p {
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: var(--primary-dark);
+}
+
+button {
+    font-family: inherit;
 }
 
 /* Modo oscuro */
 [data-theme='dark'] {
-    /* Colores base modo oscuro */
-    --dark-bg: #121212;
-    --dark-surface: #1E1E1E;
-    --pink-accent: #FF69B4;
-    --pink-light: #FFB6C1;
+    --primary-color: #60A5FA;
+    --primary-dark: #3B82F6;
+    --secondary-color: #D1D5DB;
+    
+    --text-primary: #F3F4F6;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
+    --text-light: #6B7280;
 
-    /* Aplicación de colores */
-    --bg-primary: var(--dark-bg);
-    --bg-secondary: var(--dark-surface);
-    --bg-accent: var(--pink-accent);
-    --bg-light: var(--dark-surface);
+    --bg-primary: #111827;
+    --bg-secondary: #1F2937;
+    --bg-tertiary: #374151;
+    --bg-light-gradient: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+    --bg-card: #1F2937;
+    --border-color: #374151;
+    --border-color-light: #4B5563;
 
-    /* Colores de texto modo oscuro */
-    --text-primary: #E5E7EB;
-    --text-secondary: #9CA3AF;
-    --text-muted: #6B7280;
-
-    --border-color: #2D2D2D;
-
-    /* Sombras modo oscuro */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    background: linear-gradient(135deg, #1E1E1E 0%, #121212 50%, #1E1E1E 100%);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6);
 }
 
-/* Ajustes de tema oscuro */
 [data-theme='dark'] h1,
 [data-theme='dark'] h2,
 [data-theme='dark'] h3,
@@ -94,9 +192,4 @@ h1, h2, h3, h4, h5, h6 {
 [data-theme='dark'] h5,
 [data-theme='dark'] h6 {
     color: var(--text-primary);
-}
-
-[data-theme='dark'] .nav-link.active {
-    background-color: var(--pink-accent);
-    color: var(--dark-bg);
 }

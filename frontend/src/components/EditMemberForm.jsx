@@ -72,8 +72,9 @@ function EditMemberForm() {
             <h2>Editar Miembro </h2>
             
             <div className="form-group">
-                <label>Nombre  </label>
+                <label className="form-label">Nombre</label>
                 <input
+                    className="form-input"
                     type="text"
                     name="name"
                     value={formData.name}
@@ -83,8 +84,9 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Email  </label>
+                <label className="form-label">Email</label>
                 <input
+                    className="form-input"
                     type="email"
                     name="email"
                     value={formData.email}
@@ -94,8 +96,9 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Teléfono  </label>
+                <label className="form-label">Teléfono</label>
                 <input
+                    className="form-input"
                     type="tel"
                     name="phone"
                     value={formData.phone}
@@ -104,8 +107,9 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Fecha de Nacimiento  </label>
+                <label className="form-label">Fecha de Nacimiento</label>
                 <input
+                    className="form-input"
                     type="date"
                     name="birth_date"
                     value={formData.birth_date}
@@ -114,8 +118,9 @@ function EditMemberForm() {
             </div>
 
             <div className="form-group">
-                <label>Nueva Foto de Perfil  </label>
+                <label className="form-label">Nueva Foto de Perfil</label>
                 <input
+                    className="form-input"
                     type="file"
                     name="avatar"
                     onChange={handleChange}

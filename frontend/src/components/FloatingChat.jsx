@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import { useChatContext } from '../context/chatContext';
-import { useAuth } from '../context/AuthContext';
 import '../styles/FloatingChat.css';
 
 const FloatingChat = () => {
@@ -18,17 +17,18 @@ const FloatingChat = () => {
 
     const { context, loadContext, sendMessage } = useChatContext();
 
-    const { user } = useAuth();
+    // Usar un userId genérico (1) ya que no hay autenticación
+    const userId = 1;
 
     // Cargar contexto cuando se abre el chat
     useEffect(() => {
-        if (user?.id && isOpen) {
-            loadContext(user.id).catch(err => {
+        if (isOpen) {
+            loadContext(userId).catch(err => {
                 console.error('Error loading context:', err);
                 setError('Error al cargar el contexto');
             });
         }
-    }, [user?.id, isOpen, loadContext]);
+    }, [isOpen, loadContext]);
 
     // Auto-scroll a últimos mensajes
     const scrollToBottom = useCallback(() => {
@@ -59,15 +59,22 @@ const FloatingChat = () => {
             setInputMessage('');
 
             // Obtener respuesta
-            const response = await sendMessage(user.id, trimmedMessage);
+            const response = await sendMessage(userId, trimmedMessage);
             
-            // Respuesta del asistente
+            // Si la API indicó error, usaremos el mensaje de error
+            let replyText;
+            if (response && response.success === false) {
+                replyText = response.error || 'Lo siento, ocurrió un problema.';
+            } else {
+                replyText = response.response || 'Lo siento, no pude procesar tu mensaje.';
+            }
+
             const assistantMessage = {
                 id: Date.now() + 1,
                 type: 'assistant',
-                content: response.response || 'Lo siento, no pude procesar tu mensaje.'
+                content: replyText
             };
-            
+
             setMessages(prev => [...prev, assistantMessage]);
 
         } catch (error) {
@@ -83,7 +90,7 @@ const FloatingChat = () => {
             setIsLoading(false);
             inputRef.current?.focus();
         }
-    }, [inputMessage, isLoading, sendMessage, user]);
+    }, [inputMessage, isLoading, sendMessage, userId]);
 
     const handleSubmit = useCallback((e) => {
         e.preventDefault();

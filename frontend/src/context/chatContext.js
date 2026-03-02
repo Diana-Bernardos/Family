@@ -24,13 +24,9 @@ export const ChatContextProvider = ({ children }) => {
     }, []);
 
     const sendMessage = useCallback(async (userId, message) => {
-        try {
-            const response = await api.sendChatMessage(userId, message);
-            return response;
-        } catch (error) {
-            console.error('Error sending message:', error);
-            throw error;
-        }
+        // siempre devolvemos el objeto obtenido, aunque indique success:false
+        const response = await api.sendChatMessage(userId, message);
+        return response;
     }, []);
 
     return (

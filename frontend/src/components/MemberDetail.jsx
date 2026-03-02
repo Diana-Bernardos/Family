@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
 import { api } from '../services/api';
 import DocumentPreview from './DocumentPreview';
 
@@ -22,11 +24,16 @@ const MemberDetail = () => {
     const loadAllData = async () => {
         try {
             setLoading(true);
-            const [memberData, eventsData, documentsData] = await Promise.all([
-                api.getMember(id),
-                api.getMemberEvents(id),
-                api.getMemberDocuments(id)
-            ]);
+            const memberData = await api.getMember(id);
+            const eventsData = await api.getMemberEvents(id);
+            let documentsData = [];
+            try {
+                documentsData = await api.getMemberDocuments(id);
+            } catch (docErr) {
+                console.warn('No se pudieron cargar los documentos del miembro:', docErr);
+                // show minimal error; keep page functioning
+                setError('Algunos datos no se pudieron recuperar (documentos)');
+            }
             setMember(memberData);
             setMemberEvents(eventsData);
             setDocuments(documentsData);
@@ -133,11 +140,31 @@ const MemberDetail = () => {
     };
 
     if (loading) return <div className="loading">Cargando...</div>;
+    if (error) return <div className="error-message">{error}</div>;
     if (!member) return <div className="error-message">Miembro no encontrado</div>;
 
     const avatarUrl = member.avatar ? 
         `data:${member.avatar.type};base64,${member.avatar.data}` : 
         '/default-avatar.png';
+
+    // formatear eventos del miembro para el calendario
+    const formattedMemberEvents = memberEvents.map(ev => ({
+        id: ev.id,
+        title: ev.name,
+        date: ev.event_date.split('T')[0],
+        backgroundColor: ev.color || '#3788d8',
+        borderColor: ev.color || '#3788d8',
+        textColor: getContrastColor(ev.color || '#3788d8')
+    }));
+
+    function getContrastColor(hexcolor) {
+        const r = parseInt(hexcolor.slice(1, 3), 16);
+        const g = parseInt(hexcolor.slice(3, 5), 16);
+        const b = parseInt(hexcolor.slice(5, 7), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? '#000000' : '#FFFFFF';
+    }
+
 
     return (
         <div className="member-detail">
@@ -184,6 +211,34 @@ const MemberDetail = () => {
                     >
                         <Home size={20} />
                     </button>
+                </div>
+            </div>
+
+            <div className="member-calendar-section">
+                <h3>Calendario de {member.name}</h3>
+                <Link to={`/new-event?memberId=${id}`} className="btn btn-primary btn-sm">
+                    ➕ Agregar evento personal
+                </Link>
+                <div className="calendar-view" style={{ marginTop: '1rem' }}>
+                    <FullCalendar
+                        plugins={[dayGridPlugin]}
+                        initialView="dayGridMonth"
+                        events={formattedMemberEvents}
+                        locale="es"
+                        headerToolbar={{
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth'
+                        }}
+                        eventClick={(info) => navigate(`/event/${info.event.id}`)}
+                        eventContent={(eventInfo) => (
+                            <div className="flex items-center p-1 overflow-hidden">
+                                <span className="event-title truncate">{eventInfo.event.title}</span>
+                            </div>
+                        )}
+                        dayMaxEvents={true}
+                        height="auto"
+                    />
                 </div>
             </div>
 

@@ -57,7 +57,7 @@ router.get('/:id', async (req, res) => {
         const member = rows[0];
         const response = {
             ...member,
-            avatar: member.avatar_data ? {
+            avatar: member.avatar_data && member.avatar_type && member.avatar_type.startsWith('image/') ? {
                 data: member.avatar_data.toString('base64'),
                 type: member.avatar_type
             } : null
@@ -79,12 +79,11 @@ router.get('/', async (req, res) => {
         
         const members = rows.map(member => ({
             ...member,
-            avatar: member.avatar_data ? {
+            avatar: member.avatar_data && member.avatar_type && member.avatar_type.startsWith('image/') ? {
                 data: member.avatar_data.toString('base64'),
                 type: member.avatar_type
             } : null
         }));
-
         members.forEach(member => {
             delete member.avatar_data;
             delete member.avatar_type;
@@ -136,20 +135,39 @@ router.get('/:id', async (req, res) => {
 router.post('/', upload.single('avatar'), async (req, res) => {
     const connection = await pool.getConnection();
     try {
+        const { name, email, phone, birth_date } = req.body;
+
+        // Validación básica
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ error: 'El nombre del miembro es requerido' });
+        }
+
+        if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            return res.status(400).json({ error: 'El email no es válido' });
+        }
+
         await connection.beginTransaction();
 
-        const { name, email, phone, birth_date } = req.body;
         let avatarData = null;
         let avatarType = null;
 
         if (req.file) {
+            if (req.file.size > 5 * 1024 * 1024) { // 5MB max
+                await connection.rollback();
+                return res.status(400).json({ error: 'El archivo es demasiado grande (máximo 5MB)' });
+            }
+            // validar tipo MIME de imagen
+            if (!req.file.mimetype.startsWith('image/')) {
+                await connection.rollback();
+                return res.status(400).json({ error: 'Solo se permiten imágenes para el avatar' });
+            }
             avatarData = req.file.buffer;
             avatarType = req.file.mimetype;
         }
 
         const [result] = await connection.query(
             'INSERT INTO members (name, email, phone, birth_date, avatar_data, avatar_type) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, phone || null, birth_date || null, avatarData, avatarType]
+            [name.trim(), email || null, phone || null, birth_date || null, avatarData, avatarType]
         );
 
         await connection.commit();
@@ -168,9 +186,18 @@ router.post('/', upload.single('avatar'), async (req, res) => {
 
         res.status(201).json(response);
     } catch (error) {
-        await connection.rollback();
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error al crear miembro' });
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error('Error al revertir transacción:', rollbackError);
+        }
+        console.error('Error en POST /members:', error);
+        
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'El email ya existe' });
+        }
+        
+        res.status(500).json({ error: 'Error al crear miembro: ' + error.message });
     } finally {
         connection.release();
     }

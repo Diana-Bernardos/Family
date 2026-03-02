@@ -5,15 +5,24 @@ const axios = require('axios');
 require('dotenv').config();
 const fs = require('fs');
 
+// catch unhandled errors to prevent crashes and log them
+process.on('unhandledRejection', (err) => {
+    console.error('🔥 Unhandled Promise Rejection:', err);
+});
+process.on('uncaughtException', (err) => {
+    console.error('🔥 Uncaught Exception:', err);
+});
+
 const config = require('./config/config');
 const pool = require('./config/database');
 const ChatService = require('./services/chatService');
+const { initializeDatabase } = require('./utils/dbInit');
 
 const app = express();
 
 // CORS configuration
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3004', 'http://localhost:3005'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
@@ -55,44 +64,17 @@ app.post('/api/assistant/query', async (req, res) => {
     const { query, userId } = req.body;
     
     try {
-        // Get context for the chat
-        const context = await ChatService.getFullContext(userId);
+        if (!query || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Query y userId son requeridos'
+            });
+        }
+
+        // Usar el servicio mejorado de ChatService
+        const result = await ChatService.sendMessage(userId, query);
         
-        // Create prompt with context
-        const prompt = ChatService.createPrompt(query, context);
-
-        // Call Ollama
-        const response = await axios.post(`${config.OLLAMA_API_URL}/generate`, {
-            model: config.MODEL_NAME,
-            prompt: prompt,
-            stream: false,
-            options: {
-                temperature: 0.3, // Reducido para respuestas más precisas
-                top_k: 10,
-                top_p: 0.9,
-                num_ctx: 2048,
-                repeat_penalty: 1.2
-            }
-        });
-
-        // Generate suggestions
-        const suggestions = await ChatService.generateSuggestions(context);
-
-        // Save interaction
-        await ChatService.saveInteraction(
-            userId, 
-            query, 
-            response.data.response, 
-            context, 
-            'query'
-        );
-        
-        res.json({
-            success: true,
-            response: response.data.response,
-            context: context,
-            suggestions: suggestions
-        });
+        res.json(result);
     } catch (error) {
         console.error('Error en el asistente:', error);
         res.status(500).json({
@@ -136,6 +118,16 @@ app.get('/api/assistant/suggestions/:userId', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error detallado:', err);
+    // Para rutas críticas convertimos cualquier fallo a status 200 para que
+    // el frontend no reciba 500 y pueda manejar el mensaje.
+    if (req.path.startsWith('/api/ai') || req.path.startsWith('/api/documents')) {
+        return res.status(200).json({
+            success: false,
+            error: 'Error interno del servidor',
+            details: err.message
+        });
+    }
+
     res.status(500).json({
         success: false,
         error: 'Error interno del servidor',
@@ -143,15 +135,46 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
-const PORT = process.env.PORT || config.PORT;
-const server = app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
-
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date() });
 });
 
-module.exports = server;
+// Start server
+const PORT = process.env.PORT || config.PORT;
+
+async function startServer() {
+    try {
+        console.log('\n═══════════════════════════════════════════════════════════');
+        console.log('   Inicializando Family Calendar App');
+        console.log('═══════════════════════════════════════════════════════════\n');
+        
+        // Inicializar base de datos
+        console.log('📦 Inicializando base de datos...');
+        await initializeDatabase();
+        
+        console.log('\n✅ Base de datos lista');
+        
+        const server = app.listen(PORT, () => {
+            console.log('✅ Servidor iniciado correctamente');
+            console.log(`\n🌐 Backend: http://localhost:${PORT}`);
+            console.log(`🌐 Frontend: http://localhost:3000`);
+            console.log(`📚 API Docs: http://localhost:${PORT}/health`);
+            console.log('\n═══════════════════════════════════════════════════════════\n');
+        });
+
+        // Manejo de errores del servidor
+        server.on('error', (error) => {
+            if (error.code === 'EADDRINUSE') {
+                console.error(`\n✗ El puerto ${PORT} já está en uso`);
+                process.exit(1);
+            }
+            throw error;
+        });
+    } catch (error) {
+        console.error('\n✗ Error al iniciar el servidor:', error.message);
+        process.exit(1);
+    }
+}
+
+startServer();

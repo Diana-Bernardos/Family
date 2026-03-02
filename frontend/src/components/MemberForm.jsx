@@ -52,8 +52,9 @@ const MemberForm = () => {
             {error && <div className="error-message">{error}</div>}
 
             <div className="form-group">
-                <label>Nombre  </label>
+                <label className="form-label">Nombre</label>
                 <input
+                    className="form-input"
                     type="text"
                     name="name"
                     value={formData.name}
@@ -63,20 +64,21 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Email  </label>
+                <label className="form-label">Email</label>
                 <input
+                    className="form-input"
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    
                 />
             </div>
 
             <div className="form-group">
-                <label>Teléfono  </label>
+                <label className="form-label">Teléfono</label>
                 <input
+                    className="form-input"
                     type="tel"
                     name="phone"
                     value={formData.phone}
@@ -85,8 +87,9 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Fecha de Nacimiento  </label>
+                <label className="form-label">Fecha de Nacimiento</label>
                 <input
+                    className="form-input"
                     type="date"
                     name="birth_date"
                     value={formData.birth_date}
@@ -95,8 +98,9 @@ const MemberForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Avatar  </label>
+                <label className="form-label">Avatar</label>
                 <input
+                    className="form-input"
                     type="file"
                     name="avatar"
                     onChange={handleChange}

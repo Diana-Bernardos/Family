@@ -99,34 +99,34 @@ const EditEventForm = () => {
             <h2>Editar Evento</h2>
             
             <div className="form-group">
-                <label>Nombre del Evento:</label>
+                <label className="form-label">Nombre del Evento:</label>
                 <input
+                    className="form-input"
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    
                 />
             </div>
 
             <div className="form-group">
-                <label>Fecha:</label>
+                <label className="form-label">Fecha:</label>
                 <input
+                    className="form-input"
                     type="date"
                     name="event_date"
                     value={formData.event_date}
                     onChange={handleChange}
-                    
                 />
             </div>
 
             <div className="form-group">
-                <label>Tipo de Evento:</label>
+                <label className="form-label">Tipo de Evento:</label>
                 <select
+                    className="form-select"
                     name="event_type"
                     value={formData.event_type}
                     onChange={handleChange}
-                    
                 >
                     <option value="">Seleccionar tipo</option>
                     {EVENT_TYPES.map(type => (
@@ -138,8 +138,9 @@ const EditEventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Icono:</label>
+                <label className="form-label">Icono:</label>
                 <select
+                    className="form-select"
                     name="icon"
                     value={formData.icon}
                     onChange={handleChange}
@@ -155,8 +156,9 @@ const EditEventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Color:</label>
+                <label className="form-label">Color:</label>
                 <input
+                    className="form-input"
                     type="color"
                     name="color"
                     value={formData.color}
@@ -165,8 +167,9 @@ const EditEventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Nueva Imagen:</label>
+                <label className="form-label">Nueva Imagen:</label>
                 <input
+                    className="form-input"
                     type="file"
                     name="image"
                     onChange={handleChange}
@@ -175,13 +178,13 @@ const EditEventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Miembros:</label>
+                <label className="form-label">Miembros:</label>
                 <select
+                    className="form-select member-select"
                     multiple
                     name="selectedMembers"
                     value={selectedMembers}
                     onChange={handleChange}
-                    className="member-select"
                 >
                     {members.map(member => (
                         <option key={member.id} value={member.id}>

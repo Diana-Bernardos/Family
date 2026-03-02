@@ -231,11 +231,12 @@ async function getAIResponse(query, context) {
 router.post('/process', async (req, res) => {
     const { userId, message } = req.body;
     
+    // siempre devolvemos JSON con 200 para evitar que el cliente vea un 500
     try {
         console.log('Received request:', { userId, message });
         
         if (!userId || !message) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 error: 'UserId y mensaje son requeridos'
             });
@@ -243,10 +244,11 @@ router.post('/process', async (req, res) => {
 
         const result = await ChatService.sendMessage(userId, message);
         
-        res.json(result);
+        // forzamos 200
+        return res.status(200).json(result);
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
+        console.error('Error processing message in /process route:', error);
+        return res.status(200).json({
             success: false,
             error: 'Error al procesar el mensaje',
             details: error.message

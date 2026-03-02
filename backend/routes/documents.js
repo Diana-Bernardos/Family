@@ -13,6 +13,11 @@ const upload = multer({
 // Obtener documentos
 router.get('/:memberId/documents', async (req, res) => {
     try {
+        const memberId = req.params.memberId;
+        if (isNaN(memberId)) {
+            return res.status(400).json({ success: false, error: 'ID de miembro inválido' });
+        }
+
         const [rows] = await pool.query(
             `SELECT 
                 id, 
@@ -23,12 +28,68 @@ router.get('/:memberId/documents', async (req, res) => {
             FROM member_documents 
             WHERE member_id = ? 
             ORDER BY upload_date DESC`,
-            [req.params.memberId]
+            [memberId]
         );
-        res.json(rows);
+        return res.json(rows);
     } catch (error) {
         console.error('Error al obtener documentos:', error);
-        res.status(500).json({ error: 'Error al obtener documentos' });
+        // intentar crear o reparar la tabla si no existe y reintentar una vez
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            console.log('Tabla member_documents no existe, creando de forma automática');
+            try {
+                await pool.query(`
+                    CREATE TABLE IF NOT EXISTS member_documents (
+                      id INT PRIMARY KEY AUTO_INCREMENT,
+                      member_id INT NOT NULL,
+                      document_name VARCHAR(255) NOT NULL,
+                      document_type VARCHAR(100),
+                      file_data LONGBLOB,
+                      file_size INT,
+                      upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+                      INDEX idx_member_id (member_id),
+                      INDEX idx_upload_date (upload_date)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                `);
+                const [rows2] = await pool.query(
+                    `SELECT id, document_name, document_type, file_size, upload_date
+                     FROM member_documents
+                     WHERE member_id = ? ORDER BY upload_date DESC`,
+                    [req.params.memberId]
+                );
+                return res.json(rows2);
+            } catch (innerErr) {
+                console.error('Error creando tabla member_documents:', innerErr);
+            }
+        }
+        // corregir columnas faltantes (por migraciones anteriores)
+        if (error.code === 'ER_BAD_FIELD_ERROR') {
+            const msg = error.message || '';
+            console.log('Error de campo en member_documents:', msg);
+            // si falta file_size o file_data la solución es añadir la columna
+            try {
+                if (msg.includes('file_size')) {
+                    console.log('Agregando columna file_size automáticamente');
+                    await pool.query('ALTER TABLE member_documents ADD COLUMN file_size INT');
+                }
+                if (msg.includes('file_data')) {
+                    console.log('Agregando columna file_data automáticamente');
+                    await pool.query('ALTER TABLE member_documents ADD COLUMN file_data LONGBLOB');
+                }
+                // reintentar la consulta original
+                const [rows3] = await pool.query(
+                    `SELECT id, document_name, document_type, file_size, upload_date
+                     FROM member_documents
+                     WHERE member_id = ? ORDER BY upload_date DESC`,
+                    [req.params.memberId]
+                );
+                return res.json(rows3);
+            } catch (fixErr) {
+                console.error('Error reparando columnas de member_documents:', fixErr);
+            }
+        }
+        // siempre devolver 200 con detalles
+        return res.status(200).json({ error: 'Error al obtener documentos', details: error.message });
     }
 });
 
@@ -51,7 +112,7 @@ router.post('/:memberId/upload', (req, res) => {
             await connection.beginTransaction();
 
             const [result] = await connection.query(
-                'INSERT INTO member_documents (member_id, document_name, document_type, document_data, file_size) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO member_documents (member_id, document_name, document_type, file_data, file_size) VALUES (?, ?, ?, ?, ?)',
                 [
                     req.params.memberId,
                     req.file.originalname,
@@ -86,7 +147,7 @@ router.post('/:memberId/upload', (req, res) => {
 router.get('/download/:id', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT document_name, document_type, document_data FROM member_documents WHERE id = ?',
+            'SELECT document_name, document_type, file_data FROM member_documents WHERE id = ?',
             [req.params.id]
         );
 
@@ -97,7 +158,7 @@ router.get('/download/:id', async (req, res) => {
         const document = rows[0];
         res.setHeader('Content-Type', document.document_type);
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.document_name)}"`);
-        res.send(document.document_data);
+        res.send(document.file_data);
     } catch (error) {
         console.error('Error al descargar documento:', error);
         res.status(500).json({ error: 'Error al descargar documento' });

@@ -1,20 +1,27 @@
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 export const api = {
-    // Reutilizar headers comunes
+    // Realizar solicitudes (sin autenticación requerida)
     async authenticatedRequest(url, options = {}) {
-        const token = localStorage.getItem('token');
+        // No forzar Content-Type si el body es FormData (fetch lo maneja automáticamente)
         const headers = {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
             ...options.headers,
         };
+        
+        // Solo agregar Content-Type si no es FormData
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         const response = await fetch(url, { ...options, headers });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Error en la solicitud');
+            try {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error: ${response.status}`);
+            } catch (e) {
+                throw new Error(`Error en la solicitud: ${response.status}`);
+            }
         }
 
         return response.json();
@@ -32,14 +39,16 @@ export const api = {
     createEvent: async (eventData) => {
         return api.authenticatedRequest(`${API_URL}/events`, {
             method: 'POST',
-            body: JSON.stringify(eventData),
+            body: eventData,
         });
     },
 
     updateEvent: async (id, eventData) => {
+        // Si es FormData, enviar directamente; si es objeto, convertir a JSON
+        const body = eventData instanceof FormData ? eventData : JSON.stringify(eventData);
         return api.authenticatedRequest(`${API_URL}/events/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(eventData),
+            body: body,
         });
     },
 
@@ -59,14 +68,16 @@ export const api = {
     createMember: async (memberData) => {
         return api.authenticatedRequest(`${API_URL}/members`, {
             method: 'POST',
-            body: JSON.stringify(memberData),
+            body: memberData,
         });
     },
 
     updateMember: async (id, memberData) => {
+        // Si es FormData, enviar directamente; si es objeto, convertir a JSON
+        const body = memberData instanceof FormData ? memberData : JSON.stringify(memberData);
         return api.authenticatedRequest(`${API_URL}/members/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(memberData),
+            body: body,
         });
     },
 
@@ -76,9 +87,7 @@ export const api = {
 
     getMemberEvents: async (id) => {
         return api.authenticatedRequest(`${API_URL}/members/${id}/events`);
-    },
-
-    // Documentos
+    },    // Documentos
     uploadDocument: async (memberId, file) => {
         const formData = new FormData();
         formData.append('document', file);
@@ -97,7 +106,12 @@ export const api = {
     },
 
     getMemberDocuments: async (memberId) => {
-        return api.authenticatedRequest(`${API_URL}/documents/${memberId}/documents`);
+        const res = await api.authenticatedRequest(`${API_URL}/documents/${memberId}/documents`);
+        // la ruta ahora puede devolver un objeto de error aunque el status sea 200
+        if (res && res.error) {
+            throw new Error(res.error + (res.details ? `: ${res.details}` : ''));
+        }
+        return res;
     },
 
     downloadDocument: async (documentId) => {
@@ -136,14 +150,24 @@ export const api = {
                 body: JSON.stringify({ userId, message })
             });
 
+            const data = await response.json().catch(() => ({}));
+
             if (!response.ok) {
-                throw new Error('Error al enviar mensaje');
+                // status de error, convertir en objeto legible
+                console.error('sendChatMessage received error status', response.status, data);
+                return { success: false, error: data.error || 'Error al enviar mensaje', details: data.details };
             }
 
-            return await response.json();
+            // si la API marcó error, retornamos el mismo objeto pero no lanzamos excepción
+            if (data && data.success === false) {
+                return data;
+            }
+
+            return data;
         } catch (error) {
-            console.error('Error:', error);
-            throw error;
+            console.error('Error en sendChatMessage:', error);
+            // en caso de fallo de red devolvemos un mensaje básico
+            return { success: false, error: 'No se pudo conectar con el servidor' };
         }
     },
 

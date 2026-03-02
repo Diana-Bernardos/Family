@@ -18,10 +18,18 @@ const EventForm = () => {
         selectedMembers: []
     });
 
+    const [searchParams] = new URLSearchParams(window.location.search);
+    const memberIdParam = new URLSearchParams(window.location.search).get('memberId');
+
     useEffect(() => {
         loadMembers();
     }, []);
 
+    useEffect(() => {
+        if (memberIdParam) {
+            setFormData(prev => ({ ...prev, selectedMembers: [Number(memberIdParam)] }));
+        }
+    }, [memberIdParam]);
     const loadMembers = async () => {
         try {
             const data = await api.getMembers();
@@ -78,8 +86,9 @@ const EventForm = () => {
             {error && <div className="error-message">{error}</div>}
 
             <div className="form-group">
-                <label>Titulo  </label>
+                <label className="form-label">Titulo</label>
                 <input
+                    className="form-input"
                     type="text"
                     name="name"
                     value={formData.name}
@@ -89,8 +98,9 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Fecha  </label>
+                <label className="form-label">Fecha</label>
                 <input
+                    className="form-input"
                     type="date"
                     name="event_date"
                     value={formData.event_date}
@@ -100,8 +110,9 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Tipo de Evento  </label>
+                <label className="form-label">Tipo de Evento</label>
                 <select
+                    className="form-select"
                     name="event_type"
                     value={formData.event_type}
                     onChange={handleChange}
@@ -117,13 +128,13 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label> Miembros    </label>
+                <label className="form-label">Miembros</label>
                 <select
+                    className="form-select member-select"
                     multiple
                     name="selectedMembers"
                     value={formData.selectedMembers}
                     onChange={handleChange}
-                    className="member-select"
                 >
                     {members.map(member => (
                         <option key={member.id} value={member.id}>
@@ -135,8 +146,9 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Icono  </label>
+                <label className="form-label">Icono</label>
                 <select
+                    className="form-select"
                     name="icon"
                     value={formData.icon}
                     onChange={handleChange}
@@ -151,8 +163,9 @@ const EventForm = () => {
             </div>
 
             <div className="form-group">
-                <label>Color  </label>
+                <label className="form-label">Color</label>
                 <input
+                    className="form-input"
                     type="color"
                     name="color"
                     value={formData.color}

@@ -1,22 +1,22 @@
 /* Estilos para diferentes tipos de mensajes */
 .message-event {
-    border-left: 4px solid #22c55e;
-    background-color: #f0fdf4;
+    border-left: 4px solid var(--honeydew-300);
+    background-color: var(--honeydew-900);
 }
 
 .message-document {
-    border-left: 4px solid #eab308;
-    background-color: #fefce8;
+    border-left: 4px solid var(--powder-petal-300);
+    background-color: var(--almond-cream-900);
 }
 
 .message-task {
-    border-left: 4px solid #3b82f6;
-    background-color: #eff6ff;
+    border-left: 4px solid var(--powder-blue-500);
+    background-color: var(--powder-blue-900);
 }
 
 .message-recommendation {
-    border-left: 4px solid #ec4899;
-    background-color: #fdf2f8;
+    border-left: 4px solid var(--powder-petal-300);
+    background-color: var(--powder-petal-900);
 }
 
 /* Estilos para elementos interactivos dentro de los mensajes */

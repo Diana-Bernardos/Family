@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Menu, X } from 'lucide-react';
+import { Home, Users, Plus, Menu, X } from 'lucide-react';
 
 const Navigation = () => {
    const [menuOpen, setMenuOpen] = useState(false);
    const location = useLocation();
 
+   const closeMenu = () => setMenuOpen(false);
+
    return (
        <nav className="main-navigation">
            <div className="nav-container">
-               <Link to="/" className="nav-brand">
-                   <img 
-                       src={process.env.PUBLIC_URL + "/static/media/family-logo.481e22f25cac2029f077.png"} 
-                       alt="Logo" 
-                       className="nav-logo" 
-                       style={{ width: '40px', height: '40px' }}
-                   />
+               <Link to="/" className="nav-brand" onClick={closeMenu}>
+                   <div className="nav-logo-wrapper">
+                       <span className="nav-logo-text">👨‍👩‍👧‍👦</span>
+                       <span className="nav-logo-title">Family Calendar</span>
+                   </div>
                </Link>
 
-               <button className="mobile-menu hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+               <button 
+                   className="mobile-menu hamburger" 
+                   onClick={() => setMenuOpen(!menuOpen)}
+                   aria-label="Toggle menu"
+               >
                    {menuOpen ? <X size={24} /> : <Menu size={24} />}
                </button>
 
@@ -26,25 +30,39 @@ const Navigation = () => {
                    <Link 
                        to="/" 
                        className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                       onClick={() => setMenuOpen(false)}
+                       onClick={closeMenu}
                    >
-                       <span>Calendario</span>
+                       <Home size={18} />
+                       <span>Inicio</span>
                    </Link>
                    
                    <Link 
                        to="/members" 
-                       className={`nav-link ${location.pathname.includes('/members') ? 'active' : ''}`}
-                       onClick={() => setMenuOpen(false)}
+                       className={`nav-link ${location.pathname === '/members' ? 'active' : ''}`}
+                       onClick={closeMenu}
                    >
-                       Miembros
+                       <Users size={18} />
+                       <span>Miembros</span>
                    </Link>
+
+                   <div className="nav-divider"></div>
 
                    <Link 
                        to="/new-event"
-                       className="btn btn-primary"
-                       onClick={() => setMenuOpen(false)}
+                       className="btn btn-primary btn-small"
+                       onClick={closeMenu}
                    >
+                       <Plus size={16} />
                        Nuevo Evento
+                   </Link>
+
+                   <Link 
+                       to="/new-member"
+                       className="btn btn-secondary btn-small"
+                       onClick={closeMenu}
+                   >
+                       <Plus size={16} />
+                       Agregar Miembro
                    </Link>
                </div>
            </div>

@@ -66,9 +66,9 @@
 }
 
 .btn-danger {
-    background-color:darksalmon;
+    background-color: var(--powder-petal-300);
     color: white;
-    border-color:antiquewhite;
+    border-color: var(--powder-petal-600);
 }
 
 .btn-danger:hover {
@@ -82,6 +82,18 @@
     min-width: 80px;
 }
 
+.btn {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
 .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -91,7 +103,34 @@
 .form-group {
     margin-bottom: 2rem;
     margin-left: 40px;
-  }
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.home-header {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+}
+
+.home-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    transition: transform 0.2s;
+}
+
+.home-avatar:hover {
+    transform: scale(1.1);
+}
   
   .event form {
     width: 100%;
@@ -236,3 +275,88 @@
 .flex-column { flex-direction: column; }
 .justify-center { justify-content: center; }
 .align-center { align-items: center; }
+
+/* Homepage Layout */
+.home-page-container {
+    width: 100%;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-secondary) 100%);
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.home-header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+
+.home-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+}
+
+.home-page-layout {
+    width: 100%;
+    max-width: 1400px;
+}
+
+.calendar-section {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+/* miembros-section ya no se usa en home, pero mantener estilo para otras páginas */
+.members-section {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    /* layout stays full width */
+    .home-page-layout {
+        /* no grid */
+    }
+}
+
+@media (max-width: 1024px) {
+    /* layout stays simple */
+    .home-page-layout {
+        /* no grid */
+    }
+    
+    .members-section {
+        max-height: none;
+    }
+    
+    .home-page-container {
+        padding: 1rem;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendar-section,
+    .members-section {
+        padding: 1rem;
+    }
+    
+    .home-page-container {
+        padding: 0.5rem;
+    }
+}

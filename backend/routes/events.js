@@ -74,31 +74,62 @@ router.get('/:id', async (req, res) => {
 router.post('/', upload.single('image'), async (req, res) => {
     const connection = await pool.getConnection();
     try {
+        const { name, event_date, event_type, icon, color, members } = req.body;
+
+        // Validación básica
+        if (!name || name.trim() === '') {
+            return res.status(400).json({ error: 'El nombre del evento es requerido' });
+        }
+
+        if (!event_date) {
+            return res.status(400).json({ error: 'La fecha del evento es requerida' });
+        }
+
+        // Validar formato de fecha (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(event_date)) {
+            return res.status(400).json({ error: 'Formato de fecha inválido (debe ser YYYY-MM-DD)' });
+        }
+
         await connection.beginTransaction();
 
-        const { name, event_date, event_type, icon, color, members } = req.body;
         let imageData = null;
         let imageType = null;
 
         if (req.file) {
+            if (req.file.size > 5 * 1024 * 1024) { // 5MB max
+                await connection.rollback();
+                return res.status(400).json({ error: 'El archivo es demasiado grande (máximo 5MB)' });
+            }
+            if (!req.file.mimetype.startsWith('image/')) {
+                await connection.rollback();
+                return res.status(400).json({ error: 'Solo se permiten imágenes para el evento' });
+            }
             imageData = req.file.buffer;
             imageType = req.file.mimetype;
         }
 
         const [eventResult] = await connection.query(
             'INSERT INTO events (name, event_date, event_type, icon, color, image_data, image_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, event_date, event_type, icon, color, imageData, imageType]
+            [name.trim(), event_date, event_type || null, icon || null, color || '#000000', imageData, imageType]
         );
 
         const eventId = eventResult.insertId;
 
         if (members) {
-            const memberIds = JSON.parse(members);
+            const memberIds = Array.isArray(members) ? members : JSON.parse(members);
             for (const memberId of memberIds) {
-                await connection.query(
-                    'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
-                    [eventId, memberId]
-                );
+                try {
+                    await connection.query(
+                        'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
+                        [eventId, memberId]
+                    );
+                } catch (memberError) {
+                    // Ignorar si el miembro no existe o ya está asignado
+                    if (memberError.code !== 'ER_NO_REFERENCED_ROW_2' && memberError.code !== 'ER_DUP_ENTRY') {
+                        throw memberError;
+                    }
+                }
             }
         }
 
@@ -111,18 +142,22 @@ router.post('/', upload.single('image'), async (req, res) => {
             event_type,
             icon,
             color,
-            image: imageData ? {
+            image: imageData && imageType && imageType.startsWith('image/') ? {
                 data: imageData.toString('base64'),
                 type: imageType
             } : null,
-            members: members ? JSON.parse(members) : []
+            members: members ? (Array.isArray(members) ? members : JSON.parse(members)) : []
         };
 
         res.status(201).json(response);
     } catch (error) {
-        await connection.rollback();
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error al crear evento' });
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error('Error al revertir transacción:', rollbackError);
+        }
+        console.error('Error en POST /events:', error);
+        res.status(500).json({ error: 'Error al crear evento: ' + error.message });
     } finally {
         connection.release();
     }
@@ -133,14 +168,31 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, event_date, event_type, icon, color } = req.body;
-        const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID del evento requerido' });
+        }
+
+        let imageData = undefined;
+        let imageType = undefined;
+
+        if (req.file) {
+            if (req.file.size > 5 * 1024 * 1024) { // 5MB max
+                return res.status(400).json({ error: 'El archivo es demasiado grande (máximo 5MB)' });
+            }
+            if (!req.file.mimetype.startsWith('image/')) {
+                return res.status(400).json({ error: 'Solo se permiten imágenes para el evento' });
+            }
+            imageData = req.file.buffer;
+            imageType = req.file.mimetype;
+        }
 
         let query = 'UPDATE events SET name = ?, event_date = ?, event_type = ?, icon = ?, color = ?';
         let params = [name, event_date, event_type, icon, color];
 
-        if (image_url) {
-            query += ', image_url = ?';
-            params.push(image_url);
+        if (imageData !== undefined) {
+            query += ', image_data = ?, image_type = ?';
+            params.push(imageData, imageType);
         }
 
         query += ' WHERE id = ?';
@@ -149,25 +201,35 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         const [result] = await pool.query(query, params);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Evento no encontrado' });
+            return res.status(404).json({ error: 'Evento no encontrado' });
         }
 
-        res.json({ message: 'Evento actualizado exitosamente' });
+        res.json({ message: 'Evento actualizado exitosamente', id });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error en PUT /events/:id:', error);
+        res.status(500).json({ error: 'Error al actualizar evento: ' + error.message });
     }
 });
 
 // Eliminar evento
 router.delete('/:id', async (req, res) => {
     try {
-        const [result] = await pool.query('DELETE FROM events WHERE id = ?', [req.params.id]);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Evento no encontrado' });
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ error: 'ID del evento requerido' });
         }
+
+        const [result] = await pool.query('DELETE FROM events WHERE id = ?', [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Evento no encontrado' });
+        }
+
         res.json({ message: 'Evento eliminado exitosamente' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error en DELETE /events/:id:', error);
+        res.status(500).json({ error: 'Error al eliminar evento: ' + error.message });
     }
 });
 
