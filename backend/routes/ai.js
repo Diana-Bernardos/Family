@@ -228,11 +228,12 @@ async function getAIResponse(query, context) {
 }
 
 // Procesar mensajes del chat
+console.log('AI router loaded and ready');
 router.post('/process', async (req, res) => {
-    const { userId, message } = req.body;
-    
-    // siempre devolvemos JSON con 200 para evitar que el cliente vea un 500
+    // mueve la desestructuración dentro del try para que cualquier excepción
+    // sea capturada y no provoque un 500 automático.
     try {
+        const { userId, message } = req.body || {};
         console.log('Received request:', { userId, message });
         
         if (!userId || !message) {
