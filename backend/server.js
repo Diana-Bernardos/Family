@@ -20,6 +20,8 @@ const { initializeDatabase } = require('./utils/dbInit');
 
 const app = express();
 
+// exportamos app para entornos serverless (Vercel) o test
+
 // CORS configuration
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3004', 'http://localhost:3005'],
@@ -177,4 +179,7 @@ async function startServer() {
     }
 }
 
-startServer();
+// Sólo arrancar si ejecutamos este archivo directamente (no cuando se importa en serverless)
+if (require.main === module) {
+    startServer();
+}

@@ -1,4 +1,9 @@
 {
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "homepage": "https://Diana-Bernardos.github.io/Family.git",
   "devDependencies": {
     "gh-pages": "^6.2.0"
@@ -6,9 +11,10 @@
   "scripts": {
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "eject": "react-scripts eject",
+    "start": "npm run start --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "start:backend": "npm run start --workspace backend",
+    "dev:backend": "npm run dev --workspace backend",
     "test": "jest",
     "test:watch": "jest --watchAll"
   },

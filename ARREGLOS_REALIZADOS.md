@@ -153,6 +153,14 @@ Además de corregir los 400, la aplicación ahora ofrece una experiencia de usua
 * 🪪 **Carga de datos más resiliente**: `MemberDetail` ahora solicita documentos por separado y no bloquea el resto de la página si hay un fallo; muestra mensajes específicos.
 * 🖱️ **Avatares clicables**: el encabezado de la página principal muestra todos los avatares y cada uno actúa como enlace al calendario personal del miembro.
 * 🎨 **Uniformidad visual**: botones ahora comparten tamaño mínimo y estilo, los formularios utilizan clases de estilo coherentes (`form-label`, `form-input`, etc.) y se han añadido reglas CSS para `.form-actions` y `.home-avatar`.
+* ☁️ **Preparación para despliegue en Vercel**:
+  - `config/config.js` lee variables de entorno en lugar de valores fijos.
+  - Se añadió `vercel.json` con builds y rutas para servir el frontend estático y el backend como función serverless.
+  - `api/index.js` envuelve la aplicación Express para Vercel.
+  - `backend/server.js` exporta el `app` y sólo arranca el servidor cuando se ejecuta directamente.
+  - El `package.json` raíz ahora actúa como monorepo (workspaces) y contiene scripts para lanzar cada subproyecto.
+  - Se validan tipos MIME de imágenes en subidas para evitar avisos de recursos inválidos.
+  - 📝 **Despliegue**: haz push a GitHub y conecta el repositorio en Vercel; configura variables de entorno (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, JWT_SECRET, OLLAMA_API_URL, etc.) en el panel de Vercel. La build correrá `npm install` en la raíz, creará la carpeta `frontend/build` y desplegará el backend como función lambda bajo `/api/*`.
 
 Estas mejoras no introducen nuevas peticiones inválidas; todo el flujo se probó para evitar errores 400/500.
 
