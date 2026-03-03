@@ -1,15 +1,9 @@
 [build]
-  command = "npm install --no-audit && cd frontend && npm install --no-audit && npm run build"
-  publish = "frontend/build"
-  functions = "netlify/functions"
+  command = "npm install && npm run build"
+  publish = "build"
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
 
 [[redirects]]
   from = "/*"
