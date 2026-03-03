@@ -80,89 +80,61 @@ app.use(async (req, res, next) => {
     next();
 });
 
-// API routes
-app.use('/api/members', membersRouter);
-app.use('/api/events', eventsRouter);
-app.use('/api/documents', documentsRouter);
-app.use('/api/auth', authRoutes);
-app.use('/api/assistant', assistantRouter);
-app.use('/api/ai', aiRouter);
+// --- Unified API Router ---
+const apiRouter = express.Router();
 
-// Diagnostic endpoint
-app.get('/api/health-check', async (req, res) => {
+// Middleware de logs para diagnóstico en el router
+apiRouter.use((req, res, next) => {
+    if (process.env.NODE_ENV !== 'test') {
+        console.log(`📡 [API Route] ${req.method} ${req.path}`);
+    }
+    next();
+});
+
+// Rutas de la API (sin el prefijo /api aquí)
+apiRouter.use('/members', membersRouter);
+apiRouter.use('/events', eventsRouter);
+apiRouter.use('/documents', documentsRouter);
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/assistant', assistantRouter);
+apiRouter.use('/ai', aiRouter);
+
+// Health check endpoint en el router
+apiRouter.get('/health-check', async (req, res) => {
     try {
         const [result] = await pool.query('SELECT 1 as connected');
         res.json({ 
             status: 'ok', 
             database: 'connected', 
-            environment: process.env.NODE_ENV || 'development',
-            timestamp: new Date()
+            environment: process.env.NODE_ENV || 'production',
+            timestamp: new Date(),
+            path_received: req.path
         });
     } catch (error) {
         res.status(500).json({ 
             status: 'error', 
             database: 'disconnected', 
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            message: error.message
         });
     }
 });
 
-// Chatbot endpoint
-app.post('/api/assistant/query', async (req, res) => {
-    const { query, userId } = req.body;
-    
-    try {
-        if (!query || !userId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Query y userId son requeridos'
-            });
-        }
+// Montar el router bajo /api (para local) y bajo / (para Netlify rewrites)
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
-        // Usar el servicio mejorado de ChatService
-        const result = await ChatService.sendMessage(userId, query);
-        
-        res.json(result);
-    } catch (error) {
-        console.error('Error en el asistente:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Error al procesar el mensaje',
-            details: error.message
-        });
-    }
+// Catch-all para el API Router (ayuda a depurar 404s en producción)
+apiRouter.all('*', (req, res) => {
+    console.log(`⚠️  Ruta API no encontrada: ${req.method} ${req.path}`);
+    res.status(404).json({
+        success: false,
+        error: 'Ruta API no encontrada',
+        method: req.method,
+        path: req.path
+    });
 });
 
-// Additional context endpoints
-app.get('/api/assistant/context/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const context = await ChatService.getFullContext(userId);
-        res.json({ success: true, data: context });
-    } catch (error) {
-        console.error('Error obteniendo contexto:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener contexto' 
-        });
-    }
-});
-
-app.get('/api/assistant/suggestions/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const context = await ChatService.getFullContext(userId);
-        const suggestions = await ChatService.generateSuggestions(context);
-        res.json({ success: true, data: suggestions });
-    } catch (error) {
-        console.error('Error obteniendo sugerencias:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al obtener sugerencias' 
-        });
-    }
-});
+// Los endpoints de /api/assistant/... ahora están dentro del assistantRouter
 
 // Error handling middleware
 app.use((err, req, res, next) => {
