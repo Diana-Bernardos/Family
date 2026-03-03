@@ -19,7 +19,7 @@ const Calendar = () => {
             const formattedEvents = data.map(event => ({
                 id: event.id,
                 title: event.name,
-                date: event.event_date.split('T')[0],
+                date: event.event_date ? event.event_date.split('T')[0] : new Date().toISOString().split('T')[0],
                 backgroundColor: event.color || '#3788d8',
                 borderColor: event.color || '#3788d8',
                 textColor: getContrastColor(event.color || '#3788d8'),
@@ -46,22 +46,13 @@ const Calendar = () => {
 
         try {
             setIsLoading(true);
-            const response = await chatbotService.processUserQuery(searchTerm, 'calendar');
+            // Usamos sendMessage que es el estándar ahora
+            const response = await chatbotService.sendMessage(1, searchTerm);
             
-            if (response.events) {
-                const formattedEvents = response.events.map(event => ({
-                    id: event.id,
-                    title: event.name,
-                    date: event.event_date.split('T')[0],
-                    backgroundColor: event.color || '#3788d8',
-                    borderColor: event.color || '#3788d8',
-                    textColor: getContrastColor(event.color || '#3788d8'),
-                    extendedProps: {
-                        icon: event.icon,
-                        image: event.image
-                    }
-                }));
-                setEvents(formattedEvents);
+            // Si el asistente devolvió una respuesta que generó cambios en LocalStorage, recargamos
+            if (response.success) {
+                await loadEvents();
+                setSearchTerm('');
             }
         } catch (err) {
             console.error('Error en búsqueda del asistente:', err);

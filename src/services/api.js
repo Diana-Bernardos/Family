@@ -4,7 +4,8 @@ const STORAGE_KEYS = {
     EVENT_MEMBERS: 'family_app_event_members',
     DOCUMENTS: 'family_app_documents',
     USER: 'family_app_user',
-    TASKS: 'family_app_tasks'
+    TASKS: 'family_app_tasks',
+    CHAT_HISTORY: 'family_app_chat_history'
 };
 
 const getLocal = (key, defaultValue = []) => {
@@ -434,14 +435,41 @@ export const api = {
                 data.response = data.response.replace(/\[\[ACTION:.*?\]\]/g, '').trim();
             }
             
+            if (data.success) {
+                // Guardar en historial local
+                const history = getLocal(STORAGE_KEYS.CHAT_HISTORY);
+                history.push({ type: 'user', content: message, timestamp: new Date().toISOString() });
+                history.push({ type: 'assistant', content: data.response, timestamp: new Date().toISOString() });
+                setLocal(STORAGE_KEYS.CHAT_HISTORY, history.slice(-50)); // Mantener últimos 50
+            }
+
             return data;
         } catch (error) {
             console.error('Error llamando al asistente real:', error);
-            // Fallback al modo demo si el servidor no está corriendo
             return { 
                 success: true, 
-                response: "Hola! Soy tu asistente en modo demo. Para usar Ollama real, inicia el backend con 'npm run server'. ¿En qué puedo ayudarte con tu calendario familiar?" 
+                response: "Hola! Soy tu asistente en modo demo. ¿En qué puedo ayudarte?" 
             };
         }
+    },
+
+    getChatContext: async () => {
+        const members = getLocal(STORAGE_KEYS.MEMBERS);
+        const events = getLocal(STORAGE_KEYS.EVENTS);
+        const tasks = getLocal(STORAGE_KEYS.TASKS);
+        return { 
+            success: true, 
+            data: { members, events, tasks } 
+        };
+    },
+
+    getChatHistory: async () => {
+        const history = getLocal(STORAGE_KEYS.CHAT_HISTORY);
+        return { success: true, data: history };
+    },
+
+    clearChatHistory: async () => {
+        localStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
+        return { success: true };
     }
 };
