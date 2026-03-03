@@ -1,11 +1,10 @@
 [build]
-  command = "npm install && cd frontend && npm install && npm run build"
+  command = "npm install --no-audit && cd frontend && npm install --no-audit && npm run build"
   publish = "frontend/build"
   functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
-  PNPM_FLAGS = "--no-frozen-lockfile"
 
 [[redirects]]
   from = "/api/*"
