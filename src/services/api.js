@@ -68,7 +68,7 @@ const initializeData = () => {
     }
 };
 
-initializeData();
+console.log("🚀 Family API Service Initialized V1.1");
 
 export const api = {
     // Helper to convert ArrayBuffer to Base64 (browser compatible)
@@ -473,3 +473,5 @@ export const api = {
         return { success: true };
     }
 };
+
+export default api;

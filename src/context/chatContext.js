@@ -14,6 +14,10 @@ export const ChatContextProvider = ({ children }) => {
 
     const loadContext = useCallback(async (userId) => {
         try {
+            if (typeof api.getChatContext !== 'function') {
+                console.warn('⚠️ api.getChatContext is not defined. Using default empty context.');
+                return;
+            }
             const response = await api.getChatContext(userId);
             if (response.success) {
                 setContext(response.data);
