@@ -53,6 +53,33 @@ const authRoutes = require('./routes/auth');
 const assistantRouter = require('./routes/assistant');
 const aiRouter = require('./routes/ai');
 
+// Middleware de logs para diagnóstico en producción
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV !== 'test') {
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    }
+    next();
+});
+
+// Middleware para asegurar inicialización en serverless - ANTES de las rutas
+let dbInitialized = false;
+app.use(async (req, res, next) => {
+    // Solo inicializar para rutas de API y si no está inicializado
+    if (!dbInitialized && req.path.includes('/api/')) {
+        try {
+            console.log('📦 Inicialización diferida de BD (Serverless)...');
+            await initializeDatabase();
+            dbInitialized = true;
+            console.log('✅ Base de datos lista');
+        } catch (dbErr) {
+            console.warn('⚠️  Inicialización omitida o fallida:', dbErr.message);
+            // No bloqueamos la petición, el pool intentará conectar por su cuenta
+            dbInitialized = true; 
+        }
+    }
+    next();
+});
+
 // API routes
 app.use('/api/members', membersRouter);
 app.use('/api/events', eventsRouter);
@@ -162,22 +189,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date() });
 });
 
-// Middleware para asegurar inicialización en serverless
-let dbInitialized = false;
-app.use(async (req, res, next) => {
-    if (!dbInitialized && req.path.startsWith('/api')) {
-        try {
-            console.log('📦 Inicialización diferida (Serverless)...');
-            await initializeDatabase();
-            dbInitialized = true;
-            console.log('✅ Base de datos lista');
-        } catch (dbErr) {
-            console.warn('⚠️  Inicialización omitida:', dbErr.message);
-            dbInitialized = true; // No reintentar cada vez si falla por tablas ya existentes
-        }
-    }
-    next();
-});
+// No-op para mantener la estructura pero el middleware real ya subió al principio
 
 // Start server
 const PORT = process.env.PORT || config.PORT;
