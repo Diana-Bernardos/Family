@@ -1,14 +1,15 @@
 {
+  "name": "family-calendar-app",
+  "version": "0.1.0",
   "private": true,
   "homepage": "https://Diana-Bernardos.github.io/Family.git",
   "scripts": {
+    "dev": "react-scripts start",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --watchAll=false",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d frontend/build",
-    "start": "cd frontend && npx react-scripts start",
-    "build": "cd frontend && npx react-scripts build",
-    "start:backend": "cd backend && node server.js",
-    "dev:backend": "cd backend && npx nodemon server.js",
-    "test": "cd frontend && npx react-scripts test --watchAll=false"
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.15",
@@ -27,5 +28,17 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "gh-pages": "^6.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
