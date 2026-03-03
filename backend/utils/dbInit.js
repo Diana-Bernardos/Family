@@ -4,29 +4,53 @@ const fs = require('fs');
 const path = require('path');
 
 async function initializeDatabase() {
+    // En producción (Netlify), si no hay DB_HOST o es localhost, no intentar inicializar
+    if (process.env.NODE_ENV === 'production') {
+        if (!process.env.DB_HOST || process.env.DB_HOST === 'localhost') {
+            console.warn('⚠️  DB_HOST no configurado o es localhost en producción. Saltando inicialización.');
+            return false;
+        }
+    }
+
     let connection;
     try {
-        // Crear conexión inicial sin especificar base de datos
+        // Crear conexión inicial con timeout corto para evitar 502
         connection = await mysql.createConnection({
             host: process.env.DB_HOST || 'localhost',
             user: process.env.DB_USER || 'root',
             password: process.env.DB_PASSWORD || 'Dianaleire',
-            multipleStatements: true
+            multipleStatements: true,
+            connectTimeout: 5000 // 5 segundos max para conectar
         });
 
-        console.log('✓ Conectado a MySQL');
+        console.log('✓ Conectado a MySQL para inicialización');
 
-        // Leer el archivo SQL
-        const sqlFile = path.join(__dirname, '../family.sql');
+        // Intentar encontrar el archivo SQL en varias ubicaciones posibles en Netlify lambda
+        const possiblePaths = [
+            path.join(process.cwd(), 'family.sql'),
+            path.join(__dirname, '../family.sql'),
+            path.join(__dirname, '../../family.sql'),
+            '/opt/build/repo/family.sql'
+        ];
+
         let sqlContent;
-        
-        try {
-            sqlContent = fs.readFileSync(sqlFile, 'utf-8');
-        } catch (err) {
-            // Si no está en el backend, buscar en la raíz
-            const rootSqlFile = path.join(__dirname, '../../family.sql');
-            sqlContent = fs.readFileSync(rootSqlFile, 'utf-8');
+        let foundPath = null;
+
+        for (const p of possiblePaths) {
+            if (fs.existsSync(p)) {
+                sqlContent = fs.readFileSync(p, 'utf-8');
+                foundPath = p;
+                break;
+            }
         }
+
+        if (!sqlContent) {
+            console.warn('⚠️  No se encontró family.sql en ninguna de las rutas probadas. Saltando inicialización.');
+            await connection.end();
+            return false;
+        }
+
+        console.log(`✓ Usando SQL desde: ${foundPath}`);
 
         // Ejecutar el archivo SQL
         await connection.query(sqlContent);
