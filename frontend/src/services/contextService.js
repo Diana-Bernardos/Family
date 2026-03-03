@@ -1,3 +1,4 @@
+// frontend/src/services/contextService.js
 class ContextService {
     static recentContexts = new Map();
     static CONTEXT_EXPIRY = 60 * 60 * 1000;
@@ -28,4 +29,4 @@ class ContextService {
     }
 }
 
-module.exports = ContextService;
+export default ContextService;
