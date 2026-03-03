@@ -17,6 +17,7 @@ import ThemeToggle from './components/ThemeToggle';
 import SplashScreen from './components/SplashScreen';
 import FloatingChat from './components/FloatingChat';
 import MembersPage from './pages/MembersPage';
+import TaskManager from './components/TaskManager';
 import Login from './components/Login';
 import Register from './components/Register';
 
@@ -32,6 +33,7 @@ import './styles/documents.css';
 import './styles/FloatingChat.css';
 import './styles/navigation.css';
 import './styles/membersPage.css';
+import './styles/TaskManager.css';
 
 // Componente para proteger rutas
 const PrivateRoute = ({ children }) => {
@@ -113,6 +115,7 @@ function App() {
                                         <Route path="/new-member" element={<PrivateRoute><MemberForm /></PrivateRoute>} />
                                         <Route path="/member/:id" element={<PrivateRoute><MemberDetail /></PrivateRoute>} />
                                         <Route path="/edit-member/:id" element={<PrivateRoute><EditMemberForm /></PrivateRoute>} />
+                                        <Route path="/tasks" element={<PrivateRoute><TaskManager /></PrivateRoute>} />
                                         
                                         {/* Redirección de rutas no encontradas */}
                                         <Route path="*" element={<Navigate to="/" replace />} />

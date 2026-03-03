@@ -3,7 +3,8 @@ const STORAGE_KEYS = {
     EVENTS: 'family_app_events',
     EVENT_MEMBERS: 'family_app_event_members',
     DOCUMENTS: 'family_app_documents',
-    USER: 'family_app_user'
+    USER: 'family_app_user',
+    TASKS: 'family_app_tasks'
 };
 
 const getLocal = (key, defaultValue = []) => {
@@ -24,6 +25,15 @@ const initializeData = () => {
             { id: 3, name: 'Hijos', email: 'hijos@family.com', phone: '555555555' }
         ];
         setLocal(STORAGE_KEYS.MEMBERS, initialMembers);
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.TASKS)) {
+        const initialTasks = [
+            { id: 1, title: 'Comprar leche y pan', description: 'Para el desayuno de mañana', completed: false, assigned_to: 2, due_date: new Date().toISOString().split('T')[0] },
+            { id: 2, title: 'Revisar calendario escolar', description: 'Verificar fechas de exámenes', completed: true, assigned_to: 1, due_date: new Date().toISOString().split('T')[0] },
+            { id: 3, title: 'Organizar cena de cumpleaños', description: 'Llamar al restaurante y confirmar reserva', completed: false, assigned_to: 1, due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0] }
+        ];
+        setLocal(STORAGE_KEYS.TASKS, initialTasks);
     }
 };
 
@@ -294,6 +304,44 @@ export const api = {
         return { success: true };
     },
 
+    // Tareas
+    getTasks: async () => {
+        return getLocal(STORAGE_KEYS.TASKS);
+    },
+
+    createTask: async (taskData) => {
+        const tasks = getLocal(STORAGE_KEYS.TASKS);
+        const newTask = {
+            id: Date.now(),
+            title: taskData.title,
+            description: taskData.description || '',
+            completed: false,
+            assigned_to: taskData.assigned_to ? parseInt(taskData.assigned_to) : null,
+            due_date: taskData.due_date || new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+        };
+        tasks.push(newTask);
+        setLocal(STORAGE_KEYS.TASKS, tasks);
+        return newTask;
+    },
+
+    updateTask: async (id, taskData) => {
+        const tasks = getLocal(STORAGE_KEYS.TASKS);
+        const index = tasks.findIndex(t => t.id === parseInt(id));
+        if (index === -1) throw new Error('Tarea no encontrada');
+        
+        tasks[index] = { ...tasks[index], ...taskData };
+        setLocal(STORAGE_KEYS.TASKS, tasks);
+        return tasks[index];
+    },
+
+    deleteTask: async (id) => {
+        let tasks = getLocal(STORAGE_KEYS.TASKS);
+        tasks = tasks.filter(t => t.id !== parseInt(id));
+        setLocal(STORAGE_KEYS.TASKS, tasks);
+        return { success: true };
+    },
+
     // Autenticación Mock
     login: async (email, password) => {
         const user = { id: 1, email, username: email.split('@')[0], token: 'mock-token-' + Date.now() };
@@ -309,10 +357,11 @@ export const api = {
 
     sendChatMessage: async (userId, message) => {
         try {
-            // Obtener contexto de LocalStorage para dárselo a la IA
+            // Obtener contexto completo de LocalStorage
             const members = getLocal(STORAGE_KEYS.MEMBERS);
             const events = getLocal(STORAGE_KEYS.EVENTS);
-            const context = { members, events };
+            const tasks = getLocal(STORAGE_KEYS.TASKS);
+            const context = { members, events, tasks };
 
             const response = await fetch('http://localhost:3001/api/chat', {
                 method: 'POST',
@@ -322,7 +371,40 @@ export const api = {
 
             if (!response.ok) throw new Error('Backend AI no disponible');
             
-            return await response.json();
+            const data = await response.json();
+            
+            // Procesar múltiples acciones automáticas si existen
+            if (data.success && data.response.includes('[[ACTION:')) {
+                const actionRegex = /\[\[ACTION:(\w+)\s+({.*?})\]\]/g;
+                let match;
+                while ((match = actionRegex.exec(data.response)) !== null) {
+                    const actionType = match[1];
+                    try {
+                        const actionData = JSON.parse(match[2]);
+                        console.log(`Ejecutando acción AI: ${actionType}`, actionData);
+                        
+                        switch (actionType) {
+                            case 'CREATE_TASK':
+                                await api.createTask(actionData);
+                                break;
+                            case 'UPDATE_TASK':
+                                if (actionData.id) await api.updateTask(actionData.id, actionData);
+                                break;
+                            case 'CREATE_EVENT':
+                                await api.createEvent(actionData);
+                                break;
+                            default:
+                                console.warn(`Acción desconocida: ${actionType}`);
+                        }
+                    } catch (e) {
+                        console.error(`Error procesando acción ${actionType}:`, e);
+                    }
+                }
+                // Limpiar todas las etiquetas de la respuesta visible
+                data.response = data.response.replace(/\[\[ACTION:.*?\]\]/g, '').trim();
+            }
+            
+            return data;
         } catch (error) {
             console.error('Error llamando al asistente real:', error);
             // Fallback al modo demo si el servidor no está corriendo

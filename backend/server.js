@@ -11,21 +11,38 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Proxy para Ollama
+// Proxy para Ollama con capacidades de Gestor de Tareas
 app.post('/api/chat', async (req, res) => {
     const { message, context } = req.body;
     const OLLAMA_URL = process.env.OLLAMA_API_URL || 'http://localhost:11434';
     const MODEL = process.env.OLLAMA_MODEL || 'phi3';
 
     try {
-        // Construir el prompt con el contexto de LocalStorage enviado desde el frontend
         const prompt = `
-        Eres un asistente familiar para la "Family App". 
-        Contexto actual de la familia (LocalStorage): ${JSON.stringify(context)}
+        Eres un GESTOR VIRTUAL DE TAREAS Y COORDINADOR FAMILIAR de nivel profesional para la "Family App". 
+        Tu objetivo es optimizar la vida diaria de la familia, anticipando necesidades y gestionando recursos.
         
-        Pregunta del usuario: ${message}
+        CONTEXTO INTEGRAL (LocalStorage):
+        - Miembros: ${JSON.stringify(context.members)}
+        - Eventos del Calendario: ${JSON.stringify(context.events)}
+        - Tareas: ${JSON.stringify(context.tasks || [])}
         
-        Responde de manera amable y útil. Si te preguntan por miembros o eventos, consulta el contexto proporcionado.
+        PROTOCOLOS DE ACCIÓN (Pro):
+        Puedes ejecutar acciones automáticas integrando cualquier parte de la app. DEBES incluir las acciones al final de tu respuesta en este formato:
+        [[ACTION:TYPE {data}]]
+        
+        Acciones permitidas:
+        1. [[ACTION:CREATE_TASK {"title": "...", "description": "...", "assigned_to": ID, "due_date": "YYYY-MM-DD"}]]
+        2. [[ACTION:UPDATE_TASK {"id": ID, "completed": true/false}]]
+        3. [[ACTION:CREATE_EVENT {"name": "...", "event_date": "YYYY-MM-DD", "event_type": "...", "icon": "...", "color": "..."}]]
+        
+        DIRECTRICES CRÍTICAS:
+        - ANALÍTICO: Si hay un evento próximo (ej. examen), sugiere tareas de estudio.
+        - COORDINADOR: Asigna tareas basándote en los miembros disponibles.
+        - PROACTIVO: No solo respondas, propón mejoras en la organización familiar.
+        - PROFESIONAL: Usa un tono ejecutivo pero cálido. Responde siempre en español.
+        
+        Mensaje del usuario: ${message}
         `;
 
         const response = await axios.post(`${OLLAMA_URL}/api/generate`, {
@@ -42,16 +59,16 @@ app.post('/api/chat', async (req, res) => {
         console.error('Error con Ollama:', error.message);
         res.status(500).json({
             success: false,
-            error: 'No se pudo conectar con Ollama. Asegúrate de que esté ejecutándose localmente.',
+            error: 'No se pudo conectar con Ollama.',
             details: error.message
         });
     }
 });
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', mode: 'hybrid-ai-proxy' });
+    res.json({ status: 'ok', mode: 'pro-task-manager-proxy' });
 });
 
 app.listen(PORT, () => {
-    console.log(`Backend AI Proxy ejecutándose en http://localhost:${PORT}`);
+    console.log(`Backend AI Proxy (Pro Task Manager) en http://localhost:${PORT}`);
 });

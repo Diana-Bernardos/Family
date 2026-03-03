@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Users, Plus, Menu, X, LogOut } from 'lucide-react';
+import { Home, Users, Plus, Menu, X, LogOut, CheckSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navigation = () => {
@@ -58,6 +58,15 @@ const Navigation = () => {
                    >
                        <Users size={18} />
                        <span>Miembros</span>
+                   </Link>
+
+                   <Link 
+                       to="/tasks" 
+                       className={`nav-link ${location.pathname === '/tasks' ? 'active' : ''}`}
+                       onClick={closeMenu}
+                   >
+                       <CheckSquare size={18} />
+                       <span>Tareas</span>
                    </Link>
 
                    <div className="nav-divider"></div>
