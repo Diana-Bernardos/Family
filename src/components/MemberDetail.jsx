@@ -10,6 +10,7 @@ import DocumentPreview from './DocumentPreview';
 const MemberDetail = () => {
     const [member, setMember] = useState(null);
     const [memberEvents, setMemberEvents] = useState([]);
+    const [memberTasks, setMemberTasks] = useState([]);
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
@@ -26,6 +27,11 @@ const MemberDetail = () => {
             setLoading(true);
             const memberData = await api.getMember(id);
             const eventsData = await api.getMemberEvents(id);
+            const tasksData = await api.getTasks();
+            
+            // Filtrar tareas asignadas a este miembro
+            const assignedTasks = tasksData.filter(t => t.assigned_to === parseInt(id));
+            
             let documentsData = [];
             try {
                 documentsData = await api.getMemberDocuments(id);
@@ -36,6 +42,7 @@ const MemberDetail = () => {
             }
             setMember(memberData);
             setMemberEvents(eventsData);
+            setMemberTasks(assignedTasks);
             setDocuments(documentsData);
         } catch (error) {
             setError('Error al cargar los datos del miembro');
@@ -245,6 +252,28 @@ const MemberDetail = () => {
                         height="auto"
                     />
                 </div>
+            </div>
+
+            <div className="member-tasks-section">
+                <h3>Tareas Asignadas</h3>
+                {memberTasks.length === 0 ? (
+                    <p className="no-tasks">No hay tareas asignadas a este miembro</p>
+                ) : (
+                    <div className="tasks-summary-list">
+                        {memberTasks.map(task => (
+                            <div key={task.id} className={`task-summary-item ${task.completed ? 'completed' : ''}`}>
+                                <span className="task-status-icon">{task.completed ? '✅' : '⏳'}</span>
+                                <div className="task-summary-info">
+                                    <span className="task-summary-title">{task.title}</span>
+                                    {task.due_date && <span className="task-summary-date">Vence: {task.due_date}</span>}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                <Link to="/tasks" className="btn btn-secondary btn-sm" style={{ marginTop: '0.5rem' }}>
+                    Ir al Gestor de Tareas
+                </Link>
             </div>
 
             <div className="member-documents-section">

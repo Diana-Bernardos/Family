@@ -1,4 +1,6 @@
 /* src/styles/theme.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap');
+
 :root {
     /* ==================== NUEVA PALETA DE COLORES ==================== */
     
@@ -62,54 +64,36 @@
     --powder-blue-800: #dce8f1;
     --powder-blue-900: #eef3f8;
     
-    /* ==================== COLORES DERIVADOS (usando la paleta) ==================== */
-    /* Paleta de colores principal - actualizada */
+    /* ==================== COLORES DERIVADOS ==================== */
     --primary-color: var(--powder-blue-500);
     --primary-dark: var(--powder-blue-300);
     --secondary-color: var(--honeydew-500);
     --accent-color: var(--powder-petal-300);
     
-    /* Paleta suave del logo */
-    --peach: var(--almond-cream-500);
-    --mint: var(--honeydew-500);
-    --sky: var(--powder-blue-800);
-    --navy: var(--dust-grey-100);    
-    /* Colores de texto - actualizados */
     --text-primary: var(--dust-grey-100);
     --text-secondary: var(--dust-grey-300);
     --text-muted: var(--dust-grey-400);
-    --text-light: var(--dust-grey-600);
 
-    /* Fondos y bordes - actualizados */
     --bg-primary: #FFFFFF;
-    --bg-secondary: var(--almond-cream-900);
-    --bg-tertiary: var(--honeydew-900);
-    --bg-light-gradient: linear-gradient(135deg, var(--almond-cream-900) 0%, var(--powder-blue-900) 100%);
+    --bg-secondary: #FAFAFA;
+    --bg-light-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
     --bg-card: #FFFFFF;
-    --border-color: var(--dust-grey-700);
-    --border-color-light: var(--honeydew-800);
+    --border-color: #E2E8F0;
     
-    /* Sombras */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 
-    /* Espaciados */
-    --spacing-xs: 0.5rem;
-    --spacing-sm: 1rem;
-    --spacing-md: 1.5rem;
-    --spacing-lg: 2rem;
-    --spacing-xl: 2.5rem;
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    /* Border radius */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 12px;
-    --border-radius-xl: 16px;
+body {
+    font-family: 'Inter', sans-serif;
+}
 
-    /* Transiciones */
-    --transition: all 0.3s ease;
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
 }
 
 * {

@@ -3,6 +3,7 @@ export const EVENT_TYPES = [
     { value: 'cumpleanos', label: 'Cumpleaños' },
     { value: 'reunion', label: 'Reunión' },
     { value: 'celebracion', label: 'Celebración' },
+    { value: 'examen', label: 'Examen/Estudio' },
     { value: 'otro', label: 'Otro' }
 ];
 
@@ -11,6 +12,7 @@ export const ICONS = [
     { value: 'fas fa-users', label: '👥 Reunión' },
     { value: 'fas fa-heart', label: '❤️ Familiar' },
     { value: 'fas fa-gift', label: '🎁 Celebración' },
+    { value: 'fas fa-book', label: '📖 Examen/Estudio' },
     { value: 'fas fa-star', label: '⭐ Otro' }
 ];
 

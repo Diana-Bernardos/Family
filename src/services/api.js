@@ -27,6 +27,36 @@ const initializeData = () => {
         setLocal(STORAGE_KEYS.MEMBERS, initialMembers);
     }
 
+    if (!localStorage.getItem(STORAGE_KEYS.EVENTS)) {
+        const initialEvents = [
+            { 
+                id: 1, 
+                name: 'Cena Familiar', 
+                event_date: new Date(Date.now() + 172800000).toISOString(), 
+                event_type: 'familiar', 
+                icon: 'fas fa-heart', 
+                color: '#FF6B6B' 
+            },
+            { 
+                id: 2, 
+                name: 'Examen de Matemáticas', 
+                event_date: new Date(Date.now() + 432000000).toISOString(), 
+                event_type: 'examen', 
+                icon: 'fas fa-book', 
+                color: '#457ba4' 
+            }
+        ];
+        setLocal(STORAGE_KEYS.EVENTS, initialEvents);
+        
+        // Asignar miembros al examen
+        const initialEventMembers = [
+            { event_id: 1, member_id: 1 },
+            { event_id: 1, member_id: 2 },
+            { event_id: 2, member_id: 3 } // Hijos tienen el examen
+        ];
+        setLocal(STORAGE_KEYS.EVENT_MEMBERS, initialEventMembers);
+    }
+
     if (!localStorage.getItem(STORAGE_KEYS.TASKS)) {
         const initialTasks = [
             { id: 1, title: 'Comprar leche y pan', description: 'Para el desayuno de mañana', completed: false, assigned_to: 2, due_date: new Date().toISOString().split('T')[0] },

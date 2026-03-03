@@ -34,12 +34,12 @@ app.post('/api/chat', async (req, res) => {
         Acciones permitidas:
         1. [[ACTION:CREATE_TASK {"title": "...", "description": "...", "assigned_to": ID, "due_date": "YYYY-MM-DD"}]]
         2. [[ACTION:UPDATE_TASK {"id": ID, "completed": true/false}]]
-        3. [[ACTION:CREATE_EVENT {"name": "...", "event_date": "YYYY-MM-DD", "event_type": "...", "icon": "...", "color": "..."}]]
+        3. [[ACTION:CREATE_EVENT {"name": "...", "event_date": "YYYY-MM-DD", "event_type": "examen", "icon": "fas fa-book", "color": "#457ba4"}]]
         
         DIRECTRICES CRÍTICAS:
-        - ANALÍTICO: Si hay un evento próximo (ej. examen), sugiere tareas de estudio.
-        - COORDINADOR: Asigna tareas basándote en los miembros disponibles.
-        - PROACTIVO: No solo respondas, propón mejoras en la organización familiar.
+        - ANALÍTICO: Si el usuario menciona un examen o estudio, usa el tipo de evento "examen".
+        - COORDINADOR: Asigna tareas de preparación para los exámenes (ej. "Estudiar tema 1") al miembro correspondiente.
+        - PROACTIVO: Sugiere descansos y organización de apuntes.
         - PROFESIONAL: Usa un tono ejecutivo pero cálido. Responde siempre en español.
         
         Mensaje del usuario: ${message}
