@@ -9,7 +9,15 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || config.DB.database,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    connectTimeout: 10000,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
+});
+
+// Registrar errores del pool para el diagnóstico
+pool.on('error', (err) => {
+    console.error('🔥 Error en el pool de la base de datos:', err);
 });
 
 module.exports = pool;

@@ -61,6 +61,26 @@ app.use('/api/auth', authRoutes);
 app.use('/api/assistant', assistantRouter);
 app.use('/api/ai', aiRouter);
 
+// Diagnostic endpoint
+app.get('/api/health-check', async (req, res) => {
+    try {
+        const [result] = await pool.query('SELECT 1 as connected');
+        res.json({ 
+            status: 'ok', 
+            database: 'connected', 
+            environment: process.env.NODE_ENV || 'development',
+            timestamp: new Date()
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: 'error', 
+            database: 'disconnected', 
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
+
 // Chatbot endpoint
 app.post('/api/assistant/query', async (req, res) => {
     const { query, userId } = req.body;
@@ -140,6 +160,23 @@ app.use((err, req, res, next) => {
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy', timestamp: new Date() });
+});
+
+// Middleware para asegurar inicialización en serverless
+let dbInitialized = false;
+app.use(async (req, res, next) => {
+    if (!dbInitialized && req.path.startsWith('/api')) {
+        try {
+            console.log('📦 Inicialización diferida (Serverless)...');
+            await initializeDatabase();
+            dbInitialized = true;
+            console.log('✅ Base de datos lista');
+        } catch (dbErr) {
+            console.warn('⚠️  Inicialización omitida:', dbErr.message);
+            dbInitialized = true; // No reintentar cada vez si falla por tablas ya existentes
+        }
+    }
+    next();
 });
 
 // Start server
