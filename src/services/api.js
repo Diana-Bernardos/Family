@@ -308,9 +308,28 @@ export const api = {
     },
 
     sendChatMessage: async (userId, message) => {
-        return { 
-            success: true, 
-            response: "Hola! Soy tu asistente en modo demo. Como no hay servidor, responderé con mensajes predefinidos. ¿En qué puedo ayudarte con tu calendario familiar?" 
-        };
+        try {
+            // Obtener contexto de LocalStorage para dárselo a la IA
+            const members = getLocal(STORAGE_KEYS.MEMBERS);
+            const events = getLocal(STORAGE_KEYS.EVENTS);
+            const context = { members, events };
+
+            const response = await fetch('http://localhost:3001/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, context })
+            });
+
+            if (!response.ok) throw new Error('Backend AI no disponible');
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Error llamando al asistente real:', error);
+            // Fallback al modo demo si el servidor no está corriendo
+            return { 
+                success: true, 
+                response: "Hola! Soy tu asistente en modo demo. Para usar Ollama real, inicia el backend con 'npm run server'. ¿En qué puedo ayudarte con tu calendario familiar?" 
+            };
+        }
     }
 };

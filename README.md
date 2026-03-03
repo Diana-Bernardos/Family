@@ -14,7 +14,7 @@ Esta versión de la aplicación utiliza **LocalStorage** para la persistencia de
 
 ## 🚀 Instalación Local
 
-Si deseas ejecutar este proyecto en tu máquina local:
+La aplicación ahora funciona en **Modo Híbrido**: los datos se guardan localmente para mayor estabilidad, pero el asistente inteligente utiliza un pequeño servidor para hablar con Ollama.
 
 1.  Clona el repositorio:
     ```bash
@@ -24,10 +24,13 @@ Si deseas ejecutar este proyecto en tu máquina local:
     ```bash
     npm install
     ```
-3.  Inicia la aplicación:
+3.  Asegúrate de tener **Ollama** ejecutándose localmente con el modelo `phi3` (o cámbialo en `backend/.env`).
+4.  Inicia todo el sistema (Frontend + AI Proxy):
     ```bash
-    npm start
+    npm run dev
     ```
+
+La aplicación se abrirá en `http://localhost:3000`. El servidor de la IA correrá en el puerto `3001`.
 
 La aplicación se abrirá en `http://localhost:3000`.
 
