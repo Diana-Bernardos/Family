@@ -151,11 +151,15 @@ async function startServer() {
         console.log('   Inicializando Family Calendar App');
         console.log('═══════════════════════════════════════════════════════════\n');
         
-        // Inicializar base de datos
+        // Inicializar base de datos (no letal — si ya existe o falla, continuamos)
         console.log('📦 Inicializando base de datos...');
-        await initializeDatabase();
-        
-        console.log('\n✅ Base de datos lista');
+        try {
+            await initializeDatabase();
+            console.log('\n✅ Base de datos lista');
+        } catch (dbErr) {
+            console.warn('⚠️  initializeDatabase falló (puede que las tablas ya existan):', dbErr.message);
+            console.warn('   El servidor continuará intentando conectar con la BD existente.');
+        }
         
         const server = app.listen(PORT, () => {
             console.log('✅ Servidor iniciado correctamente');

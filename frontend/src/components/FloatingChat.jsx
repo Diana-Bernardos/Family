@@ -1,23 +1,28 @@
 // frontend/src/components/FloatingChat.jsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, Bot } from 'lucide-react';
 import { useChatContext } from '../context/chatContext';
 import '../styles/FloatingChat.css';
 
+const WELCOME_MESSAGE = {
+    id: 'welcome',
+    type: 'assistant',
+    content: '¡Hola! 👋 Soy tu asistente familiar. Puedo ayudarte a:\n\n• 📅 Consultar eventos del calendario\n• 👨‍👩‍👧 Gestionar miembros de la familia\n• ➕ Crear eventos: "crear evento llamado Cena para 2026-04-01"\n• 📋 Ver tareas y recordatorios\n\n¿En qué te puedo ayudar hoy?'
+};
+
 const FloatingChat = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([WELCOME_MESSAGE]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
-    const chatBoxRef = useRef(null);
 
     const { context, loadContext, sendMessage } = useChatContext();
 
-    // Usar un userId genérico (1) ya que no hay autenticación
+    // Usar userId genérico ya que no hay autenticación en el gestor familiar
     const userId = 1;
 
     // Cargar contexto cuando se abre el chat
@@ -25,14 +30,15 @@ const FloatingChat = () => {
         if (isOpen) {
             loadContext(userId).catch(err => {
                 console.error('Error loading context:', err);
-                setError('Error al cargar el contexto');
             });
+            // Enfocar input al abrir
+            setTimeout(() => inputRef.current?.focus(), 100);
         }
     }, [isOpen, loadContext]);
 
     // Auto-scroll a últimos mensajes
     const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
 
     useEffect(() => {
@@ -48,7 +54,6 @@ const FloatingChat = () => {
             setIsLoading(true);
             setError(null);
             
-            // Mensaje del usuario
             const userMessage = {
                 id: Date.now(),
                 type: 'user',
@@ -58,15 +63,13 @@ const FloatingChat = () => {
             setMessages(prev => [...prev, userMessage]);
             setInputMessage('');
 
-            // Obtener respuesta
             const response = await sendMessage(userId, trimmedMessage);
             
-            // Si la API indicó error, usaremos el mensaje de error
             let replyText;
             if (response && response.success === false) {
-                replyText = response.error || 'Lo siento, ocurrió un problema.';
+                replyText = response.error || response.response || 'Lo siento, ocurrió un problema.';
             } else {
-                replyText = response.response || 'Lo siento, no pude procesar tu mensaje.';
+                replyText = response?.response || 'Lo siento, no pude procesar tu mensaje.';
             }
 
             const assistantMessage = {
@@ -104,38 +107,56 @@ const FloatingChat = () => {
         }
     }, [handleSend]);
 
+    const handleSuggestionClick = (suggestion) => {
+        setInputMessage(suggestion);
+        inputRef.current?.focus();
+    };
+
+    const SUGGESTIONS = [
+        '¿Qué eventos hay esta semana?',
+        '¿Cuántos miembros somos?',
+        'Mostrar próximos eventos'
+    ];
+
     return (
         <div className="floating-chat-container">
             <button 
-                className="chat-toggle-button"
+                className={`chat-toggle-button ${isOpen ? 'open' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
-                title={isOpen ? "Cerrar chat" : "Abrir chat"}
-                aria-label={isOpen ? "Cerrar chat" : "Abrir chat"}
+                title={isOpen ? 'Cerrar chat' : 'Abrir asistente familiar'}
+                aria-label={isOpen ? 'Cerrar chat' : 'Abrir asistente familiar'}
             >
-                {isOpen ? <X className="icon" /> : <MessageCircle className="icon" />}
+                {isOpen ? <X className="icon" /> : <Bot className="icon" />}
             </button>
 
             {isOpen && (
                 <div className="chat-window" role="dialog" aria-labelledby="chat-header">
                     <div className="chat-header" id="chat-header">
-                        <h5>Asistente Familiar</h5>
+                        <div className="chat-header-info">
+                            <Bot size={20} />
+                            <div>
+                                <h5>Asistente Familiar</h5>
+                                <span className="chat-status">
+                                    {isLoading ? 'Escribiendo...' : 'En línea'}
+                                </span>
+                            </div>
+                        </div>
                         {error && <div className="error-badge">{error}</div>}
                     </div>
 
-                    <div className="chat-messages" ref={chatBoxRef}>
-                        {context?.suggestions?.map((suggestion, index) => (
-                            <div key={`suggestion-${index}`} className="suggestion-message">
-                                {suggestion}
-                            </div>
-                        ))}
-
+                    <div className="chat-messages">
                         {messages.map((message) => (
                             <div
                                 key={message.id}
                                 className={`message-wrapper ${message.type}`}
                             >
+                                {message.type === 'assistant' && (
+                                    <div className="message-avatar">
+                                        <Bot size={16} />
+                                    </div>
+                                )}
                                 <div className="message">
-                                    <div className="message-content">
+                                    <div className="message-content" style={{ whiteSpace: 'pre-wrap' }}>
                                         {message.content}
                                     </div>
                                     {message.type === 'error' && (
@@ -151,8 +172,11 @@ const FloatingChat = () => {
                         ))}
                         
                         {isLoading && (
-                            <div className="message-wrapper">
-                                <div className="message assistant">
+                            <div className="message-wrapper assistant">
+                                <div className="message-avatar">
+                                    <Bot size={16} />
+                                </div>
+                                <div className="message">
                                     <div className="message-content typing">
                                         <div className="typing-indicator">
                                             <span></span>
@@ -165,6 +189,20 @@ const FloatingChat = () => {
                         )}
                         <div ref={messagesEndRef} />
                     </div>
+
+                    {messages.length === 1 && (
+                        <div className="chat-suggestions">
+                            {SUGGESTIONS.map((s, i) => (
+                                <button
+                                    key={i}
+                                    className="suggestion-chip"
+                                    onClick={() => handleSuggestionClick(s)}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     <form 
                         onSubmit={handleSubmit}
@@ -187,7 +225,7 @@ const FloatingChat = () => {
                             className="send-button"
                             aria-label="Enviar mensaje"
                         >
-                            <Send size={20} />
+                            <Send size={18} />
                         </button>
                     </form>
                 </div>
@@ -197,4 +235,3 @@ const FloatingChat = () => {
 };
 
 export default FloatingChat;
-

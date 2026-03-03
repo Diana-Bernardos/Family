@@ -2,21 +2,22 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
 const pool = require('../config/database');
 
 // Configuración de multer para subida de archivos
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
-
 // Obtener todos los eventos
 router.get('/', async (req, res) => {
     try {
         const [rows] = await pool.query(`
-            SELECT id, name, event_date, event_type, icon, color, image_data, image_type 
-            FROM events
+            SELECT e.id, e.name, e.event_date, e.event_type, e.icon, e.color, e.image_data, e.image_type,
+                   GROUP_CONCAT(em.member_id) as member_ids
+            FROM events e
+            LEFT JOIN event_members em ON e.id = em.event_id
+            GROUP BY e.id
+            ORDER BY e.event_date ASC
         `);
 
         const events = rows.map(event => ({
@@ -24,12 +25,14 @@ router.get('/', async (req, res) => {
             image: event.image_data ? {
                 data: event.image_data.toString('base64'),
                 type: event.image_type
-            } : null
+            } : null,
+            members: event.member_ids ? event.member_ids.split(',').map(Number) : []
         }));
 
         events.forEach(event => {
             delete event.image_data;
             delete event.image_type;
+            delete event.member_ids;
         });
 
         res.json(events);
@@ -52,12 +55,20 @@ router.get('/:id', async (req, res) => {
         }
 
         const event = rows[0];
+
+        // Obtener miembros del evento
+        const [memberRows] = await pool.query(
+            'SELECT member_id FROM event_members WHERE event_id = ?',
+            [req.params.id]
+        );
+
         const response = {
             ...event,
             image: event.image_data ? {
                 data: event.image_data.toString('base64'),
                 type: event.image_type
-            } : null
+            } : null,
+            members: memberRows.map(r => r.member_id)
         };
         delete response.image_data;
         delete response.image_type;
@@ -68,7 +79,6 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener evento' });
     }
 });
-
 
 // Crear nuevo evento
 router.post('/', upload.single('image'), async (req, res) => {
@@ -116,19 +126,19 @@ router.post('/', upload.single('image'), async (req, res) => {
 
         const eventId = eventResult.insertId;
 
-        if (members) {
-            const memberIds = Array.isArray(members) ? members : JSON.parse(members);
-            for (const memberId of memberIds) {
-                try {
-                    await connection.query(
-                        'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
-                        [eventId, memberId]
-                    );
-                } catch (memberError) {
-                    // Ignorar si el miembro no existe o ya está asignado
-                    if (memberError.code !== 'ER_NO_REFERENCED_ROW_2' && memberError.code !== 'ER_DUP_ENTRY') {
-                        throw memberError;
-                    }
+        const memberIds = members
+            ? (Array.isArray(members) ? members : JSON.parse(members))
+            : [];
+
+        for (const memberId of memberIds) {
+            try {
+                await connection.query(
+                    'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
+                    [eventId, memberId]
+                );
+            } catch (memberError) {
+                if (memberError.code !== 'ER_NO_REFERENCED_ROW_2' && memberError.code !== 'ER_DUP_ENTRY') {
+                    throw memberError;
                 }
             }
         }
@@ -137,16 +147,16 @@ router.post('/', upload.single('image'), async (req, res) => {
 
         const response = {
             id: eventId,
-            name,
+            name: name.trim(),
             event_date,
-            event_type,
-            icon,
-            color,
+            event_type: event_type || null,
+            icon: icon || null,
+            color: color || '#000000',
             image: imageData && imageType && imageType.startsWith('image/') ? {
                 data: imageData.toString('base64'),
                 type: imageType
             } : null,
-            members: members ? (Array.isArray(members) ? members : JSON.parse(members)) : []
+            members: memberIds
         };
 
         res.status(201).json(response);
@@ -165,11 +175,15 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 // Actualizar evento
 router.put('/:id', upload.single('image'), async (req, res) => {
+    const connection = await pool.getConnection();
     try {
+        await connection.beginTransaction();
+
         const { id } = req.params;
-        const { name, event_date, event_type, icon, color } = req.body;
+        const { name, event_date, event_type, icon, color, members } = req.body;
 
         if (!id) {
+            await connection.rollback();
             return res.status(400).json({ error: 'ID del evento requerido' });
         }
 
@@ -177,10 +191,12 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         let imageType = undefined;
 
         if (req.file) {
-            if (req.file.size > 5 * 1024 * 1024) { // 5MB max
+            if (req.file.size > 5 * 1024 * 1024) {
+                await connection.rollback();
                 return res.status(400).json({ error: 'El archivo es demasiado grande (máximo 5MB)' });
             }
             if (!req.file.mimetype.startsWith('image/')) {
+                await connection.rollback();
                 return res.status(400).json({ error: 'Solo se permiten imágenes para el evento' });
             }
             imageData = req.file.buffer;
@@ -188,7 +204,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         }
 
         let query = 'UPDATE events SET name = ?, event_date = ?, event_type = ?, icon = ?, color = ?';
-        let params = [name, event_date, event_type, icon, color];
+        let params = [name, event_date, event_type || null, icon || null, color || '#000000'];
 
         if (imageData !== undefined) {
             query += ', image_data = ?, image_type = ?';
@@ -198,16 +214,40 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         query += ' WHERE id = ?';
         params.push(id);
 
-        const [result] = await pool.query(query, params);
+        const [result] = await connection.query(query, params);
 
         if (result.affectedRows === 0) {
+            await connection.rollback();
             return res.status(404).json({ error: 'Evento no encontrado' });
         }
 
+        // Actualizar miembros del evento: borrar existentes e insertar nuevos
+        await connection.query('DELETE FROM event_members WHERE event_id = ?', [id]);
+
+        if (members) {
+            const memberIds = Array.isArray(members) ? members : JSON.parse(members);
+            for (const memberId of memberIds) {
+                try {
+                    await connection.query(
+                        'INSERT INTO event_members (event_id, member_id) VALUES (?, ?)',
+                        [id, memberId]
+                    );
+                } catch (memberError) {
+                    if (memberError.code !== 'ER_NO_REFERENCED_ROW_2' && memberError.code !== 'ER_DUP_ENTRY') {
+                        throw memberError;
+                    }
+                }
+            }
+        }
+
+        await connection.commit();
         res.json({ message: 'Evento actualizado exitosamente', id });
     } catch (error) {
+        try { await connection.rollback(); } catch (_) {}
         console.error('Error en PUT /events/:id:', error);
         res.status(500).json({ error: 'Error al actualizar evento: ' + error.message });
+    } finally {
+        connection.release();
     }
 });
 

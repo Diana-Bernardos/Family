@@ -1,44 +1,51 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const path = require('path');
-const mysql = require('mysql2/promise');
-
-
-
-
-// Configuración de la base de datos
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'tu_contraseña',
-    database: process.env.DB_NAME || 'calendar_app',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+const pool = require('../config/database'); // use shared pool
 
 // Configuración de multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
-
 // Obtener eventos de un miembro específico
 router.get('/:id/events', async (req, res) => {
     try {
-        const [rows] = await pool.query(`
-            SELECT e.*
+        const [events] = await pool.query(`
+            SELECT e.*, em.member_id
             FROM events e
             INNER JOIN event_members em ON e.id = em.event_id
             WHERE em.member_id = ?
             ORDER BY e.event_date DESC
         `, [req.params.id]);
 
-        res.json(rows);
+        res.json(events || []);
     } catch (error) {
         console.error('Error al obtener eventos del miembro:', error);
-        res.status(500).json({ error: 'Error al obtener eventos del miembro' });
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Obtener todos los miembros
+router.get('/', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, name, email, phone, birth_date, avatar_data, avatar_type FROM members');
+        
+        const members = rows.map(member => ({
+            ...member,
+            avatar: member.avatar_data && member.avatar_type && member.avatar_type.startsWith('image/') ? {
+                data: member.avatar_data.toString('base64'),
+                type: member.avatar_type
+            } : null
+        }));
+        members.forEach(member => {
+            delete member.avatar_data;
+            delete member.avatar_type;
+        });
+
+        res.json(members);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener miembros' });
     }
 });
 
@@ -72,65 +79,6 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Obtener todos los miembros
-router.get('/', async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT id, name, email, phone, birth_date, avatar_data, avatar_type FROM members');
-        
-        const members = rows.map(member => ({
-            ...member,
-            avatar: member.avatar_data && member.avatar_type && member.avatar_type.startsWith('image/') ? {
-                data: member.avatar_data.toString('base64'),
-                type: member.avatar_type
-            } : null
-        }));
-        members.forEach(member => {
-            delete member.avatar_data;
-            delete member.avatar_type;
-        });
-
-        res.json(members);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error al obtener miembros' });
-    }
-});
-
-// Obtener un miembro específico con sus eventos
-router.get('/:id', async (req, res) => {
-    try {
-        const [members] = await pool.query(`
-            SELECT m.*, 
-                   GROUP_CONCAT(e.id) as event_ids,
-                   GROUP_CONCAT(e.name) as event_names
-            FROM members m
-            LEFT JOIN event_members em ON m.id = em.member_id
-            LEFT JOIN events e ON em.event_id = e.id
-            WHERE m.id = ?
-            GROUP BY m.id
-        `, [req.params.id]);
-
-        if (members.length === 0) {
-            return res.status(404).json({ message: 'Miembro no encontrado' });
-        }
-
-        const member = members[0];
-        const formattedMember = {
-            ...member,
-            events: member.event_ids ? 
-                member.event_ids.split(',').map((id, index) => ({
-                    id,
-                    name: member.event_names.split(',')[index]
-                })) : []
-        };
-
-        res.json(formattedMember);
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-
 // Crear nuevo miembro
 router.post('/', upload.single('avatar'), async (req, res) => {
     const connection = await pool.getConnection();
@@ -156,7 +104,6 @@ router.post('/', upload.single('avatar'), async (req, res) => {
                 await connection.rollback();
                 return res.status(400).json({ error: 'El archivo es demasiado grande (máximo 5MB)' });
             }
-            // validar tipo MIME de imagen
             if (!req.file.mimetype.startsWith('image/')) {
                 await connection.rollback();
                 return res.status(400).json({ error: 'Solo se permiten imágenes para el avatar' });
@@ -174,10 +121,10 @@ router.post('/', upload.single('avatar'), async (req, res) => {
 
         const response = {
             id: result.insertId,
-            name,
-            email,
-            phone,
-            birth_date,
+            name: name.trim(),
+            email: email || null,
+            phone: phone || null,
+            birth_date: birth_date || null,
             avatar: avatarData ? {
                 data: avatarData.toString('base64'),
                 type: avatarType
@@ -220,7 +167,7 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
         }
 
         let query = 'UPDATE members SET name = ?, email = ?, phone = ?, birth_date = ?';
-        let params = [name, email, phone || null, birth_date || null];
+        let params = [name, email || null, phone || null, birth_date || null];
 
         if (req.file) {
             query += ', avatar_data = ?, avatar_type = ?';
@@ -269,26 +216,6 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     } finally {
         connection.release();
-    }
-});
-router.get('/:id/events', async (req, res) => {
-    try {
-        const [events] = await pool.query(`
-            SELECT e.*, em.member_id
-            FROM events e
-            INNER JOIN event_members em ON e.id = em.event_id
-            WHERE em.member_id = ?
-            ORDER BY e.event_date DESC
-        `, [req.params.id]);
-
-        if (!events) {
-            return res.json([]);
-        }
-
-        res.json(events);
-    } catch (error) {
-        console.error('Error al obtener eventos del miembro:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 

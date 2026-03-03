@@ -18,7 +18,6 @@ const EventForm = () => {
         selectedMembers: []
     });
 
-    const [searchParams] = new URLSearchParams(window.location.search);
     const memberIdParam = new URLSearchParams(window.location.search).get('memberId');
 
     useEffect(() => {

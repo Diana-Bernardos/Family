@@ -140,8 +140,7 @@ const MemberDetail = () => {
     };
 
     if (loading) return <div className="loading">Cargando...</div>;
-    if (error) return <div className="error-message">{error}</div>;
-    if (!member) return <div className="error-message">Miembro no encontrado</div>;
+    if (!member && !loading) return <div className="error-message">Miembro no encontrado</div>;
 
     const avatarUrl = member.avatar ? 
         `data:${member.avatar.type};base64,${member.avatar.data}` : 
@@ -168,6 +167,12 @@ const MemberDetail = () => {
 
     return (
         <div className="member-detail">
+            {error && (
+                <div className="info-banner" style={{ background: 'var(--color-warning, #fff3cd)', color: '#856404', padding: '0.5rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>⚠️ {error}</span>
+                    <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                </div>
+            )}
             
             <div className="member-header">
                 <h2>Perfil del Miembro</h2>
