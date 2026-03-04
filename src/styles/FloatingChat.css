@@ -261,6 +261,45 @@
     display: block;
 }
 
+.chat-header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.chat-header-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+}
+
+.chat-chip {
+    background: rgba(255, 255, 255, 0.9);
+    color: #2d5a2d;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.chat-clear-button {
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #1a3d1a;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.chat-clear-button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
 /* Message avatar */
 .message-wrapper {
     display: flex;

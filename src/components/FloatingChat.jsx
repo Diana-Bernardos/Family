@@ -12,7 +12,7 @@ const WELCOME_MESSAGE = {
 
 const FloatingChat = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([WELCOME_MESSAGE]);
+    const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -20,21 +20,41 @@ const FloatingChat = () => {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
-    const { context, loadContext, sendMessage } = useChatContext();
+    const { context, loadContext, sendMessage, history, loadHistory, clearHistory, isHistoryLoading } = useChatContext();
 
     // Usar userId genérico ya que no hay autenticación en el gestor familiar
     const userId = 1;
 
-    // Cargar contexto cuando se abre el chat
+    // Cargar contexto + historial cuando se abre el chat
     useEffect(() => {
         if (isOpen) {
             loadContext(userId).catch(err => {
                 console.error('Error loading context:', err);
             });
+            loadHistory(userId).catch(err => {
+                console.error('Error loading history:', err);
+            });
             // Enfocar input al abrir
             setTimeout(() => inputRef.current?.focus(), 100);
         }
-    }, [isOpen, loadContext]);
+    }, [isOpen, loadContext, loadHistory]);
+
+    // Sincronizar mensajes visibles con el historial cuando cambie
+    useEffect(() => {
+        if (!isOpen) return;
+
+        if (history && history.length > 0) {
+            const mapped = history.map((item, index) => ({
+                // Forzar IDs únicos incluso si varias entradas comparten timestamp
+                id: item.timestamp ? `${item.timestamp}-${index}` : `${item.type}-${index}`,
+                type: item.type,
+                content: item.content
+            }));
+            setMessages(mapped);
+        } else {
+            setMessages([WELCOME_MESSAGE]);
+        }
+    }, [history, isOpen]);
 
     // Auto-scroll a últimos mensajes
     const scrollToBottom = useCallback(() => {
@@ -112,10 +132,20 @@ const FloatingChat = () => {
         inputRef.current?.focus();
     };
 
+    const handleClearHistory = async () => {
+        try {
+            await clearHistory();
+            setMessages([WELCOME_MESSAGE]);
+        } catch (e) {
+            console.error('Error clearing history from chat:', e);
+        }
+    };
+
     const SUGGESTIONS = [
-        '¿Qué eventos hay esta semana?',
-        '¿Cuántos miembros somos?',
-        'Mostrar próximos eventos'
+        'Hazme un resumen de eventos y tareas de esta semana',
+        'Organiza un plan de estudio para el próximo examen',
+        'Reparte tareas domésticas entre los miembros',
+        'Mostrar próximos eventos importantes'
     ];
 
     return (
@@ -137,11 +167,32 @@ const FloatingChat = () => {
                             <div>
                                 <h5>Asistente Familiar</h5>
                                 <span className="chat-status">
-                                    {isLoading ? 'Escribiendo...' : 'En línea'}
+                                    {isLoading || isHistoryLoading ? 'Pensando...' : 'En línea para ayudarte'}
                                 </span>
                             </div>
                         </div>
-                        {error && <div className="error-badge">{error}</div>}
+                        <div className="chat-header-actions">
+                            <div className="chat-header-stats">
+                                <span className="chat-chip">
+                                    📅 {context.events?.length || 0} eventos
+                                </span>
+                                <span className="chat-chip">
+                                    👨‍👩‍👧 {context.members?.length || 0} miembros
+                                </span>
+                                <span className="chat-chip">
+                                    ✅ {context.tasks?.filter(t => t.completed).length || 0}/{context.tasks?.length || 0} tareas
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                className="chat-clear-button"
+                                onClick={handleClearHistory}
+                                title="Borrar conversación"
+                            >
+                                Limpiar
+                            </button>
+                            {error && <div className="error-badge">{error}</div>}
+                        </div>
                     </div>
 
                     <div className="chat-messages">

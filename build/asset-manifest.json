@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.58ae42c3.css",
+    "main.js": "/static/js/main.5c8691a0.js",
+    "static/media/family-logo.png": "/static/media/family-logo.481e22f25cac2029f077.png",
+    "index.html": "/index.html",
+    "main.58ae42c3.css.map": "/static/css/main.58ae42c3.css.map",
+    "main.5c8691a0.js.map": "/static/js/main.5c8691a0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.58ae42c3.css",
+    "static/js/main.5c8691a0.js"
+  ]
+}

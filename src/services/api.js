@@ -388,10 +388,14 @@ export const api = {
 
     sendChatMessage: async (userId, message) => {
         try {
-            // Obtener contexto completo de LocalStorage
-            const members = getLocal(STORAGE_KEYS.MEMBERS);
-            const events = getLocal(STORAGE_KEYS.EVENTS);
+            // Obtener contexto completo de LocalStorage, pero limpiando campos pesados (imágenes/base64)
+            const rawMembers = getLocal(STORAGE_KEYS.MEMBERS);
+            const rawEvents = getLocal(STORAGE_KEYS.EVENTS);
             const tasks = getLocal(STORAGE_KEYS.TASKS);
+
+            const members = rawMembers.map(({ avatar_data, avatar_type, ...rest }) => rest);
+            const events = rawEvents.map(({ image_data, image_type, ...rest }) => rest);
+
             const context = { members, events, tasks };
 
             const response = await fetch('http://localhost:3001/api/chat', {
@@ -421,8 +425,32 @@ export const api = {
                             case 'UPDATE_TASK':
                                 if (actionData.id) await api.updateTask(actionData.id, actionData);
                                 break;
+                            case 'DELETE_TASK':
+                                if (actionData.id) await api.deleteTask(actionData.id);
+                                break;
                             case 'CREATE_EVENT':
                                 await api.createEvent(actionData);
+                                break;
+                            case 'UPDATE_EVENT':
+                                if (actionData.id) await api.updateEvent(actionData.id, actionData);
+                                break;
+                            case 'DELETE_EVENT':
+                                if (actionData.id) await api.deleteEvent(actionData.id);
+                                break;
+                            case 'CREATE_MEMBER':
+                                await api.createMember(actionData);
+                                break;
+                            case 'UPDATE_MEMBER':
+                                if (actionData.id) await api.updateMember(actionData.id, actionData);
+                                break;
+                            case 'DELETE_MEMBER':
+                                if (actionData.id) await api.deleteMember(actionData.id);
+                                break;
+                            case 'DELETE_DOCUMENT':
+                                if (actionData.id) await api.deleteDocument(actionData.id);
+                                break;
+                            case 'CLEAR_CHAT_HISTORY':
+                                await api.clearChatHistory();
                                 break;
                             default:
                                 console.warn(`Acción desconocida: ${actionType}`);
@@ -445,10 +473,50 @@ export const api = {
 
             return data;
         } catch (error) {
+            // Fallback local rápido: responde siempre usando los datos de la app,
+            // incluso si el modelo remoto está lento o no disponible.
+            const members = getLocal(STORAGE_KEYS.MEMBERS);
+            const events = getLocal(STORAGE_KEYS.EVENTS);
+            const tasks = getLocal(STORAGE_KEYS.TASKS);
+
+            const pendingTasks = tasks.filter(t => !t.completed);
+            const completedTasks = tasks.filter(t => t.completed);
+            const upcomingEvents = events
+                .slice()
+                .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                .slice(0, 3);
+
+            let quickSummary = "Te respondo en modo rápido local usando los datos que tengo guardados en la app:\n\n";
+            quickSummary += `• Miembros: ${members.length}\n`;
+            quickSummary += `• Eventos totales: ${events.length}\n`;
+            quickSummary += `• Tareas pendientes: ${pendingTasks.length} | Completadas: ${completedTasks.length}\n\n`;
+
+            if (upcomingEvents.length > 0) {
+                quickSummary += "Próximos eventos destacados:\n";
+                upcomingEvents.forEach(ev => {
+                    const date = new Date(ev.event_date).toLocaleDateString();
+                    quickSummary += `  - ${ev.name} (${ev.event_type || "evento"}) el ${date}\n`;
+                });
+                quickSummary += "\n";
+            }
+
+            quickSummary += "Aunque el asistente avanzado está tardando o fallando, puedes pedirme cosas como:\n";
+            quickSummary += "• \"Muéstrame las tareas pendientes\"\n";
+            quickSummary += "• \"Qué eventos hay esta semana\"\n";
+            quickSummary += "• \"Qué miembro tiene el próximo examen\"\n";
+
+            if (error.name === 'AbortError') {
+                console.warn('Asistente: petición abortada por timeout (demasiado lenta).');
+                return {
+                    success: true,
+                    response: quickSummary
+                };
+            }
+
             console.error('Error llamando al asistente real:', error);
             return { 
                 success: true, 
-                response: "Hola! Soy tu asistente en modo demo. ¿En qué puedo ayudarte?" 
+                response: quickSummary
             };
         }
     },

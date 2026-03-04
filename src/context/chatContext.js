@@ -11,6 +11,8 @@ export const ChatContextProvider = ({ children }) => {
         tasks: [],
         reminders: []
     });
+    const [history, setHistory] = useState([]);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
     const loadContext = useCallback(async (userId) => {
         try {
@@ -27,17 +29,56 @@ export const ChatContextProvider = ({ children }) => {
         }
     }, []);
 
+    const loadHistory = useCallback(async (userId) => {
+        try {
+            if (typeof api.getChatHistory !== 'function') {
+                console.warn('⚠️ api.getChatHistory is not defined. Using empty history.');
+                return;
+            }
+            setIsHistoryLoading(true);
+            const response = await api.getChatHistory(userId);
+            if (response.success) {
+                setHistory(response.data || []);
+            }
+        } catch (error) {
+            console.error('Error loading chat history:', error);
+        } finally {
+            setIsHistoryLoading(false);
+        }
+    }, []);
+
+    const clearHistory = useCallback(async () => {
+        try {
+            if (typeof api.clearChatHistory !== 'function') {
+                console.warn('⚠️ api.clearChatHistory is not defined.');
+                return;
+            }
+            await api.clearChatHistory();
+            setHistory([]);
+        } catch (error) {
+            console.error('Error clearing chat history:', error);
+        }
+    }, []);
+
     const sendMessage = useCallback(async (userId, message) => {
         // siempre devolvemos el objeto obtenido, aunque indique success:false
         const response = await api.sendChatMessage(userId, message);
+        // refrescar historial para que quede siempre sincronizado
+        loadHistory(userId).catch(err => {
+            console.error('Error refreshing history after sendMessage:', err);
+        });
         return response;
-    }, []);
+    }, [loadHistory]);
 
     return (
         <ChatContext.Provider value={{
             context,
             loadContext,
-            sendMessage
+            sendMessage,
+            history,
+            loadHistory,
+            clearHistory,
+            isHistoryLoading
         }}>
             {children}
         </ChatContext.Provider>
