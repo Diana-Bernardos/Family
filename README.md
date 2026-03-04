@@ -40,6 +40,5 @@ La aplicación se abrirá en `http://localhost:3000`.
 *   **Lucide React**: Set de iconos modernos.
 *   **Vanilla CSS**: Diseño personalizado y responsive.
 *   **LocalStorage API**: Persistencia de datos sin servidor.
-
----
+https://familyca.netlify.app/login
 *Desarrollado para Diana Bernardos - Portfolio Project*
