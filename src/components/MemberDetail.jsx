@@ -249,7 +249,6 @@ const MemberDetail = () => {
                             </div>
                         )}
                         dayMaxEvents={true}
-                        height="auto"
                     />
                 </div>
             </div>
