@@ -2,21 +2,23 @@
 
 .members-page {
     width: 100%;
-    height: calc(100% - var(--nav-height)); /* ocupar espacio sin engendrar scroll externo */
+    height: 100%;   /* fill the .main-content area fully */
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-    padding: 2rem 1rem;
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
+    overflow: hidden;  /* parent never scrolls */
     animation: fadeIn 0.5s ease-in;
 }
 
 .members-header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
     color: white;
-    border-radius: 16px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(55, 136, 216, 0.2);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 6px 18px rgba(55, 136, 216, 0.15);
+    flex-shrink: 0;
 }
 
 .members-header-content {
@@ -97,7 +99,11 @@
     max-width: 1200px;
     margin: 0 auto;
     flex: 1;
-    overflow: auto; /* scrolling interno si hay muchos miembros */
+    overflow-y: auto;  /* only this container scrolls internally */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+    padding-right: 2px;
 }
 
 /* Members Grid */

@@ -21,7 +21,7 @@ import TaskManager from './components/TaskManager';
 import Login from './components/Login';
 import Register from './components/Register';
 
-// Importación de estilos
+// Estilos
 import './styles/theme.css';
 import './styles/components.css';
 import './styles/utilities.css';
@@ -35,19 +35,23 @@ import './styles/navigation.css';
 import './styles/membersPage.css';
 import './styles/TaskManager.css';
 
-// Componente para proteger rutas
+// Ruta protegida
 const PrivateRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    if (loading) return <div>Cargando...</div>;
+    if (loading) return (
+        <div className="loading-spinner" style={{ height: '100%', justifyContent: 'center' }}>
+            <div className="spinner" />
+            <p>Cargando...</p>
+        </div>
+    );
     return user ? children : <Navigate to="/login" />;
 };
 
-// Componente de página principal que muestra el calendario y un avatar pequeño
+// Página principal: avatares + calendario
 const HomePage = () => {
     const [members, setMembers] = useState([]);
 
     useEffect(() => {
-        // cargar miembros para mostrar sus avatares
         const loadMembers = async () => {
             try {
                 const data = await api.getMembers();
@@ -56,22 +60,27 @@ const HomePage = () => {
                 console.error('Error cargando miembros:', err);
             }
         };
-
         loadMembers();
     }, []);
 
     return (
         <div className="home-page-container">
+            {/* Tira de avatares */}
             <div className="home-header">
+                <span className="home-header-title">👨‍👩‍👧‍👦 Familia</span>
                 {members.map(m => {
-                    const avatarUrl = m.avatar ? `data:${m.avatar.type};base64,${m.avatar.data}` : '/default-avatar.png';
+                    const avatarUrl = m.avatar
+                        ? `data:${m.avatar.type};base64,${m.avatar.data}`
+                        : '/default-avatar.png';
                     return (
                         <Link key={m.id} to={`/member/${m.id}`}>
-                            <img src={avatarUrl} alt={m.name} className="home-avatar" />
+                            <img src={avatarUrl} alt={m.name} className="home-avatar" title={m.name} />
                         </Link>
                     );
                 })}
             </div>
+
+            {/* Calendario ocupa el espacio restante */}
             <div className="home-page-layout">
                 <Calendar />
             </div>
@@ -82,17 +91,13 @@ const HomePage = () => {
 function App() {
     const [showSplash, setShowSplash] = useState(true);
 
-    const handleSplashFinish = () => {
-        setShowSplash(false);
-    };
-
     return (
-        <ErrorBoundary>  
+        <ErrorBoundary>
             <AuthProvider>
                 <ChatContextProvider>
                     <Router>
                         {showSplash ? (
-                            <SplashScreen onFinish={handleSplashFinish} />
+                            <SplashScreen onFinish={() => setShowSplash(false)} />
                         ) : (
                             <div className="app-container">
                                 <main className="main-content">
@@ -103,28 +108,30 @@ function App() {
 
                                         {/* Rutas protegidas */}
                                         <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
-                                        
-                                        {/* Rutas de eventos */}
+
+                                        {/* Eventos */}
                                         <Route path="/new-event" element={<PrivateRoute><EventForm /></PrivateRoute>} />
                                         <Route path="/event/:id" element={<PrivateRoute><EventDetail /></PrivateRoute>} />
                                         <Route path="/edit-event/:id" element={<PrivateRoute><EditEventForm /></PrivateRoute>} />
-                                        
-                                        {/* Rutas de miembros */}
+
+                                        {/* Miembros */}
                                         <Route path="/members" element={<PrivateRoute><MembersPage /></PrivateRoute>} />
                                         <Route path="/new-member" element={<PrivateRoute><MemberForm /></PrivateRoute>} />
                                         <Route path="/member/:id" element={<PrivateRoute><MemberDetail /></PrivateRoute>} />
                                         <Route path="/edit-member/:id" element={<PrivateRoute><EditMemberForm /></PrivateRoute>} />
+
+                                        {/* Tareas */}
                                         <Route path="/tasks" element={<PrivateRoute><TaskManager /></PrivateRoute>} />
-                                        
-                                        {/* Redirección de rutas no encontradas */}
+
+                                        {/* Fallback */}
                                         <Route path="*" element={<Navigate to="/" replace />} />
                                     </Routes>
                                 </main>
                                 <Navigation />
                                 <ThemeToggle />
+                                <FloatingChat />
                             </div>
                         )}
-                        <FloatingChat />
                     </Router>
                 </ChatContextProvider>
             </AuthProvider>
@@ -133,5 +140,3 @@ function App() {
 }
 
 export default App;
-
-
