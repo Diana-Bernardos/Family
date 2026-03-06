@@ -231,7 +231,7 @@ const MemberDetail = () => {
                 <Link to={`/new-event?memberId=${id}`} className="btn btn-primary btn-sm">
                     ➕ Agregar evento personal
                 </Link>
-                <div className="calendar-view" style={{ marginTop: '1rem' }}>
+                <div className="member-personal-calendar" style={{ marginTop: '1rem' }}>
                     <FullCalendar
                         plugins={[dayGridPlugin]}
                         initialView="dayGridMonth"

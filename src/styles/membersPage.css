@@ -475,3 +475,16 @@
         opacity: 1;
     }
 }
+
+/* Personal Calendar explicitly overrides global .fc height: 100% */
+.member-personal-calendar {
+    min-height: 400px;
+    height: auto;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.member-personal-calendar .fc {
+    height: auto !important;
+    min-height: 400px;
+}
