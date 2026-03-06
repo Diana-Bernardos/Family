@@ -4,15 +4,17 @@
 
 /* ===== APP LAYOUT ===== */
 
-body {
+html, body {
+    height: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden; /* evitar scroll en toda la página principal */
 }
 
 .app-container {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh; /* ocupar toda la ventana sin permitir scroll global */
     background: var(--bg-light-gradient);
 }
 
@@ -22,6 +24,8 @@ body {
     margin: 0 auto;
     width: 100%;
     padding: 2rem 1rem;
+    overflow: hidden; /* contenido no genera scroll de página */
+    padding-bottom: var(--nav-height); /* espacio para la barra inferior */
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -267,7 +271,7 @@ body {
     font-size: 1.5rem;
     transition: var(--transition);
     position: fixed;
-    bottom: 2rem;
+    bottom: calc(var(--nav-height) + 20px);
     right: 2rem;
     z-index: 99;
     box-shadow: var(--shadow-md);

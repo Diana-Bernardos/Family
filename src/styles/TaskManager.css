@@ -3,6 +3,9 @@
     margin: 2rem auto;
     padding: 0 1.5rem;
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    height: calc(100% - var(--nav-height));
+    display: flex;
+    flex-direction: column;
 }
 
 .task-header {
@@ -64,6 +67,8 @@
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2.5rem;
     align-items: start;
+    flex: 1;
+    overflow: auto;
 }
 
 .task-column h2 {

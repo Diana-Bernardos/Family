@@ -1,12 +1,19 @@
 /* Navigation Styles */
 
+:root {
+    --nav-height: 60px; /* altura de la barra inferior fija */
+}
+
 .main-navigation {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: white;
     padding: 0;
     box-shadow: 0 4px 12px rgba(55, 136, 216, 0.15);
-    position: sticky;
-    top: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: var(--nav-height);
     z-index: 100;
 }
 
@@ -14,9 +21,10 @@
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around; /* icons evenly spaced for bottom bar */
     align-items: center;
-    padding: 1rem 2rem;
+    height: 100%;
+    padding: 0 1rem;
 }
 
 .nav-brand {
@@ -134,85 +142,34 @@
 }
 
 /* Mobile Menu Button */
+/* Eliminado en barra inferior fija, no se utiliza */
 .mobile-menu {
-    display: none;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: var(--border-radius-md);
-    transition: var(--transition);
-}
-
-.mobile-menu:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    display: none !important;
 }
 
 /* Responsive Navigation */
 @media (max-width: 768px) {
-    .nav-container {
-        padding: 1rem;
-    }
-
+    /* en móvil la barra ya es fija abajo, sólo ocultamos texto largo de logo */
     .nav-logo-title {
         display: none;
     }
-
-    .mobile-menu {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .nav-links {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        flex-direction: column;
-        gap: 0;
-        padding: 1rem 0;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-
-    .nav-links.open {
-        max-height: 500px;
-    }
-
+    /* ajustamos tamaño de fuentes y espaciado para caber en nav-bar */
     .nav-link {
-        width: 100%;
-        padding: 1rem 1.5rem;
-        border-radius: 0;
+        flex-direction: column;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .nav-link span {
+        font-size: 0.65rem;
+    }
+    /* ya no usamos menú desplegable */
+    .nav-links,
+    .nav-links.open {
+        position: static;
+        flex-direction: row;
         gap: 1rem;
-        justify-content: flex-start;
-    }
-
-    .nav-link.active::after {
-        display: none;
-    }
-
-    .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.15);
-        border-left: 3px solid white;
-        padding-left: calc(1.5rem - 3px);
-    }
-
-    .nav-divider {
-        width: calc(100% - 3rem);
-        height: 1px;
-        margin: 0.5rem 1.5rem;
-    }
-
-    .nav-links .btn-primary,
-    .nav-links .btn-secondary {
-        width: calc(100% - 3rem);
-        justify-content: center;
-        margin: 0.5rem 1.5rem;
+        max-height: none;
+        overflow: visible;
     }
 }
 
@@ -235,5 +192,15 @@
 
     .nav-link {
         font-size: 0.95rem;
+    }
+}
+
+/* helper to hide labels when space is tight */
+.hide-on-mobile {
+    display: inline;
+}
+@media (max-width: 768px) {
+    .hide-on-mobile {
+        display: none;
     }
 }

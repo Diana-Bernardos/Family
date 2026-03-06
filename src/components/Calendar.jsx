@@ -108,7 +108,7 @@ const Calendar = () => {
     }
 
     return (
-        <div className="calendar-container">
+        <div className="calendar-container" style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
             <div className="calendar-header">
                 <div className="calendar-header-info">
                     <h2 className="calendar-title">📅 Calendario de Eventos</h2>
@@ -122,14 +122,14 @@ const Calendar = () => {
                 </Link>
             </div>
             
-            <div className="calendar-content">
+            <div className="calendar-content" style={{flex:1, overflow: 'hidden'}}>
                 {isLoading ? (
                     <div className="loading-spinner">
                         <div className="spinner"></div>
                         <p>Cargando eventos...</p>
                     </div>
                 ) : (
-                    <div className="calendar-view">
+                    <div className="calendar-view" style={{height: '100%'}}>
                         <FullCalendar
                             plugins={[dayGridPlugin]}
                             initialView="dayGridMonth"
@@ -143,7 +143,7 @@ const Calendar = () => {
                             eventClick={handleEventClick}
                             eventContent={renderEventContent}
                             dayMaxEvents={true}
-                            height="auto"
+                            height="100%"
                         />
                     </div>
                 )}

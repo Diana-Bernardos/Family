@@ -95,7 +95,6 @@ function App() {
                             <SplashScreen onFinish={handleSplashFinish} />
                         ) : (
                             <div className="app-container">
-                                <Navigation />
                                 <main className="main-content">
                                     <Routes>
                                         {/* Rutas públicas */}
@@ -121,6 +120,7 @@ function App() {
                                         <Route path="*" element={<Navigate to="/" replace />} />
                                     </Routes>
                                 </main>
+                                <Navigation />
                                 <ThemeToggle />
                             </div>
                         )}

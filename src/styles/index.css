@@ -275,7 +275,8 @@
     width: 100%;
     padding: 2rem;
     background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-secondary) 100%);
-    min-height: calc(100vh - 120px);
+    /* ocupar el espacio restante considerando la barra inferior fija */
+    height: calc(100% - var(--nav-height));
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -299,6 +300,9 @@
 .home-page-layout {
     width: 100%;
     max-width: 1400px;
+    flex: 1; /* permitir que el calendario crezca bajo el encabezado */
+    display: flex;
+    flex-direction: column;
 }
 
 .calendar-section {
@@ -317,7 +321,23 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
     overflow-y: auto;
-    max-height: calc(100vh - 200px);
+    max-height: calc(100% - var(--nav-height) - 140px);
+}
+
+/* ensure calendar takes full space of its container */
+.calendar-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.calendar-view {
+    height: 100%;
 }
 
 /* Responsive */

@@ -2,7 +2,7 @@
 
 .floating-chat-container {
     position: fixed;
-    bottom: 20px;
+    bottom: calc(var(--nav-height) + 20px); /* desplazar por encima de la barra inferior */
     right: 20px;
     z-index: 1000;
 }

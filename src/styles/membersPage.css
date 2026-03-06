@@ -2,9 +2,11 @@
 
 .members-page {
     width: 100%;
-    min-height: 100vh;
+    height: calc(100% - var(--nav-height)); /* ocupar espacio sin engendrar scroll externo */
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
     animation: fadeIn 0.5s ease-in;
 }
 
@@ -94,6 +96,8 @@
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    flex: 1;
+    overflow: auto; /* scrolling interno si hay muchos miembros */
 }
 
 /* Members Grid */

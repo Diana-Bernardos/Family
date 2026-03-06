@@ -63,12 +63,15 @@ export const ChatContextProvider = ({ children }) => {
     const sendMessage = useCallback(async (userId, message) => {
         // siempre devolvemos el objeto obtenido, aunque indique success:false
         const response = await api.sendChatMessage(userId, message);
-        // refrescar historial para que quede siempre sincronizado
+        // refrescar historial y contexto para que la UI se mantenga al día
         loadHistory(userId).catch(err => {
             console.error('Error refreshing history after sendMessage:', err);
         });
+        loadContext(userId).catch(err => {
+            console.error('Error refreshing context after sendMessage:', err);
+        });
         return response;
-    }, [loadHistory]);
+    }, [loadHistory, loadContext]);
 
     return (
         <ChatContext.Provider value={{

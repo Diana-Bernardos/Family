@@ -505,6 +505,16 @@ export const api = {
             quickSummary += "• \"Qué eventos hay esta semana\"\n";
             quickSummary += "• \"Qué miembro tiene el próximo examen\"\n";
 
+            // save fallback into history as well so conversation is complete
+            try {
+                const hist = getLocal(STORAGE_KEYS.CHAT_HISTORY);
+                hist.push({ type: 'user', content: message, timestamp: new Date().toISOString() });
+                hist.push({ type: 'assistant', content: quickSummary, timestamp: new Date().toISOString() });
+                setLocal(STORAGE_KEYS.CHAT_HISTORY, hist.slice(-50));
+            } catch (e) {
+                console.error('Error saving fallback chat history:', e);
+            }
+
             if (error.name === 'AbortError') {
                 console.warn('Asistente: petición abortada por timeout (demasiado lenta).');
                 return {
